@@ -1,0 +1,18 @@
+FROM python:3.11-slim-bookworm
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git \
+        curl \
+        whois \
+        dnsutils \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 https://github.com/s41r4j/phomber /opt/phomber
+
+WORKDIR /opt/phomber
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Keep container alive so `podman exec` can invoke phomber on demand.
+CMD ["sleep", "infinity"]

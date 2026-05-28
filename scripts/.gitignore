@@ -1,0 +1,24 @@
+# ── Logs generados por los scripts de setup ───────────────────────────────────
+*.log
+llama-server.log
+build.log
+setup.log
+
+# ── Archivos temporales de nohup ──────────────────────────────────────────────
+nohup.out
+
+# ── PIDs y sockets de servicios locales ───────────────────────────────────────
+*.pid
+*.sock
+
+# ── Binarios compilados localmente (ej. llama-server para ARM64) ──────────────
+# No subir compilaciones; cada arquitectura requiere su propio build.
+llama-server
+llama-cli
+llama-*
+*.out
+
+# ── Scripts locales con rutas hardcodeadas o tokens ──────────────────────────
+# Usar *.example como plantilla y no subir el real.
+*.local.sh
+start_local.sh

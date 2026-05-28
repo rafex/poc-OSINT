@@ -1,0 +1,29 @@
+# ── Caché de Python ───────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+
+# ── Datos de sesión y resultados de queries ───────────────────────────────────
+# Cualquier archivo generado por el orquestador en tiempo de ejecución.
+session_*.json
+query_*.txt
+run_*.log
+osint_*.json
+osint_*.txt
+*.result
+
+# ── Contexto de LLM en disco ──────────────────────────────────────────────────
+# Archivos de caché de prompt o embeddings que llama.cpp puede escribir.
+*.kv_cache
+*.cache
+prompt_cache/
+
+# ── Variables y config local ──────────────────────────────────────────────────
+settings_local.py
+config_local.yaml
+.env
+
+# ── Tests ─────────────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/

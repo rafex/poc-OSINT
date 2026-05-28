@@ -1,0 +1,57 @@
+# Containerfile.llama — llama-server para validación local en contenedor
+#
+# Compilado con GGML_NATIVE=OFF para portabilidad entre CPUs (no optimizado
+# para una micro-arquitectura específica). En producción sobre la Raspberry Pi
+# se compila directamente en el host con GGML_NATIVE=ON para máximo rendimiento.
+#
+# Build:
+#   podman build -f container/Containerfile.llama -t localhost/llama-server:latest .
+#
+# Run:
+#   podman run --rm -p 8080:8080 -v $HOME/models:/models:ro \
+#     localhost/llama-server:latest \
+#     --model /models/qwen2-0_5b-instruct-q4_k_m.gguf \
+#     --host 0.0.0.0 --port 8080
+
+# ── Stage 1: compilación ──────────────────────────────────────────────────────
+FROM debian:bookworm-slim AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git \
+        cmake \
+        build-essential \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 https://github.com/ggml-org/llama.cpp /opt/llama.cpp
+
+WORKDIR /opt/llama.cpp
+
+RUN cmake -B build \
+        -DGGML_NATIVE=OFF \
+        -DCMAKE_BUILD_TYPE=Release \
+    && cmake --build build \
+        --config Release \
+        --parallel "$(nproc)" \
+        --target llama-server
+
+# ── Stage 2: imagen final mínima ──────────────────────────────────────────────
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /opt/llama.cpp/build/bin/llama-server /usr/local/bin/llama-server
+
+RUN useradd --system --no-create-home llama
+USER llama
+
+VOLUME ["/models"]
+EXPOSE 8080
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=3 \
+    CMD curl -sf http://localhost:8080/health || exit 1
+
+ENTRYPOINT ["llama-server"]

@@ -1,0 +1,74 @@
+# edge-osint-lab — Podman Compose para validación local
+#
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │  El ORQUESTADOR corre en el HOST, no en compose.                        │
+# │  Este compose gestiona la INFRAESTRUCTURA solamente:                    │
+# │    · phomber      → siempre activo                                      │
+# │    · llama-server → solo con --profile local-llm                        │
+# └─────────────────────────────────────────────────────────────────────────┘
+#
+# Perfiles:
+#   podman compose up -d                           # APIs remotas (Groq/DeepSeek)
+#   podman compose --profile local-llm up -d       # + llama-server local
+#
+# Variables de entorno leídas desde .env (copia de .env.example):
+#   LLAMA_PORT, MODEL_DIR, MODEL_FILE, LLAMA_CTX, LLAMA_THREADS
+
+name: edge-osint-lab
+
+services:
+
+  # ── PHOMBER ───────────────────────────────────────────────────────────────
+  phomber:
+    build:
+      context: .
+      dockerfile: container/Containerfile
+    image: localhost/phomber:latest
+    container_name: phomber          # nombre fijo: executor.py usa `podman exec phomber`
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python3", "--version"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ── llama-server (perfil: local-llm) ────────────────────────────────────
+  # Activa con: podman compose --profile local-llm up -d
+  llama-server:
+    profiles: ["local-llm"]
+    build:
+      context: .
+      dockerfile: container/Containerfile.llama
+    image: localhost/llama-server:latest
+    container_name: llama-server
+    restart: unless-stopped
+    ports:
+      - "${LLAMA_PORT:-8080}:8080"
+    volumes:
+      - type: bind
+        source: ${MODEL_DIR:-$HOME/models}
+        target: /models
+        read_only: true
+    command:
+      - --model
+      - /models/${MODEL_FILE:-qwen2-0_5b-instruct-q4_k_m.gguf}
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8080"
+      - --ctx-size
+      - "${LLAMA_CTX:-2048}"
+      - --threads
+      - "${LLAMA_THREADS:-4}"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
