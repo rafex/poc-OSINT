@@ -27,6 +27,16 @@ check:
 phomber *args:
     bash scripts/shellscript/phomber_proxy.sh {{args}}
 
+# Proxy transparente a Sherlock en el contenedor — cualquier comando, sin filtros
+# Uso: just osint sherlock                        → ayuda de Sherlock
+#      just osint sherlock usuario                → buscar un username
+#      just osint sherlock user1 user2            → varios usernames
+#      just osint sherlock -- --print-all usuario → todos los sitios (encontrados y no)
+#      just osint sherlock -- --timeout 10 user   → timeout personalizado
+#      just osint sherlock -- --version           → versión instalada
+sherlock *args:
+    bash scripts/shellscript/sherlock_proxy.sh {{args}}
+
 # Debug con salida formateada (stdout/stderr/exit code separados, sin LLM)
 # Uso: just osint debug               → interactivo
 #      just osint debug -- -p +52...  → comando con rich output

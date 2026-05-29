@@ -62,3 +62,10 @@ wizard:
 #      just phomber -- --help        → ayuda de PHOMBER
 phomber *args:
     bash scripts/shellscript/phomber_proxy.sh {{args}}
+
+# Proxy directo a Sherlock en el contenedor (sin LLM, sin filtros)
+# Uso: just sherlock usuario                → buscar username
+#      just sherlock -- --print-all user    → todos los sitios
+#      just sherlock -- --help              → ayuda de Sherlock
+sherlock *args:
+    bash scripts/shellscript/sherlock_proxy.sh {{args}}
