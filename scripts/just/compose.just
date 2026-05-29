@@ -77,6 +77,14 @@ shell:
 clean:
     make compose-clean
 
+# Elimina contenedores huérfanos (parados o con nombre en conflicto) y levanta el stack
+# Útil cuando just compose up falla con "container name already in use"
+reset:
+    @echo "Eliminando contenedores huérfanos…"
+    @podman stop phomber sherlock 2>/dev/null || true
+    @podman rm   phomber sherlock 2>/dev/null || true
+    just compose up
+
 # ── Helpers internos ──────────────────────────────────────────────────────────
 
 # Espera hasta que llama-server responda (máx 90s)
