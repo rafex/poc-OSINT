@@ -29,13 +29,7 @@ raspi model_path="$HOME/models":
 
 # Copia .env.example a .env si no existe aún
 env-init:
-    #!/usr/bin/env bash
-    if [ -f .env ]; then
-        echo ".env ya existe — no sobreescrito."
-    else
-        cp .env.example .env
-        echo "Creado .env desde .env.example — edita tus API keys antes de continuar."
-    fi
+    bash scripts/shellscript/env_init.sh
 
 # Verifica la configuración de API keys en el entorno actual
 check-api:

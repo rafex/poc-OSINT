@@ -28,12 +28,7 @@ restart model=`echo ${MODEL_PATH:-$HOME/models/qwen2-0_5b-instruct-q4_k_m.gguf}`
 
 # Espera hasta que llama-server responda (máx 30s)
 wait-ready:
-    @echo "Esperando llama-server..."
-    @for i in $(seq 1 30); do \
-        curl -sf http://127.0.0.1:8080/health > /dev/null 2>&1 && echo "llama-server listo." && exit 0; \
-        sleep 1; \
-    done; \
-    echo "ADVERTENCIA: llama-server no respondió en 30s. Revisa /tmp/llama-server.log"
+    bash scripts/shellscript/wait_llama.sh 30
 
 # Estado completo del stack
 status:

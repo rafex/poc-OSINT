@@ -12,24 +12,12 @@ check-health:
 
 ## check-container    Verifica solo el estado del contenedor PHOMBER
 check-container:
-	@$(PODMAN) ps \
-		--filter name=$(CONTAINER_NAME) \
-		--filter status=running \
-		--format "{{.Names}}" \
-		| grep -q $(CONTAINER_NAME) \
-	&& printf "$(GREEN)[checks]$(RESET) Contenedor '$(CONTAINER_NAME)' ACTIVO.\n" \
-	|| printf "$(RED)[checks]$(RESET) Contenedor '$(CONTAINER_NAME)' INACTIVO.\n"
+	@CONTAINER_NAME=$(CONTAINER_NAME) PODMAN=$(PODMAN) \
+		bash $(SCRIPTS_SH_DIR)/check_container.sh
 
 ## check-api-config   Muestra la cadena LLM activa y qué keys están configuradas
 check-api-config:
-	@printf "$(CYAN)[checks]$(RESET) Configuración LLM_PROVIDER=$(BOLD)$${LLM_PROVIDER:-groq|deepseek|local}$(RESET)\n"
-	@[ -n "$${GROQ_API_KEY}" ] \
-		&& printf "  $(GREEN)✓$(RESET) GROQ_API_KEY     configurada\n" \
-		|| printf "  $(YELLOW)–$(RESET) GROQ_API_KEY     no definida\n"
-	@[ -n "$${DEEPSEEK_API_KEY}" ] \
-		&& printf "  $(GREEN)✓$(RESET) DEEPSEEK_API_KEY configurada\n" \
-		|| printf "  $(YELLOW)–$(RESET) DEEPSEEK_API_KEY no definida\n"
-	@printf "  $(GREEN)✓$(RESET) local            siempre disponible (llama-server)\n"
+	@bash $(SCRIPTS_SH_DIR)/check_api_config.sh
 
 ## check-all          Ejecuta todos los checks disponibles
 check-all: check-deps check-api-config lint format-check typecheck check-container check-health

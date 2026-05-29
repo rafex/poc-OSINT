@@ -24,13 +24,7 @@ edit:
 # Exporta secretos descifrados a .env (formato KEY=value)
 # .env está en .gitignore — NUNCA commitear
 export:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    SOPS_AGE_KEY_FILE="$HOME/.age/key.txt" \
-        sops --decrypt secrets/secrets.enc.yaml \
-        | python3 scripts/python/export_secrets.py \
-        > .env
-    echo "Exportado → .env  (no commitear)"
+    bash scripts/shellscript/secrets_export.sh
 
 # Muestra los secretos descifrados en terminal (solo lectura, no guarda)
 view:
@@ -38,22 +32,8 @@ view:
 
 # Verifica que el archivo de secretos puede descifrarse con la clave actual
 check:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    export SOPS_AGE_KEY_FILE="$HOME/.age/key.txt"
-    if sops --decrypt secrets/secrets.enc.yaml > /dev/null 2>&1; then
-        echo "✓ Secretos verificados."
-    else
-        echo "✗ No se pudo descifrar. Verifica ~/.age/key.txt y .sops.yaml"
-        exit 1
-    fi
+    bash scripts/shellscript/secrets_check.sh
 
 # Muestra la clave pública age registrada en el sistema actual
 pubkey:
-    #!/usr/bin/env bash
-    key_file="$HOME/.age/key.txt"
-    if [ ! -f "$key_file" ]; then
-        echo "No se encontró ~/.age/key.txt — ejecuta: just secrets setup"
-        exit 1
-    fi
-    grep "# public key:" "$key_file"
+    bash scripts/shellscript/secrets_pubkey.sh
