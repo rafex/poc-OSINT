@@ -71,6 +71,7 @@ def run_phomber(args: list[str], timeout: int = 90) -> ExecutionResult:
             capture_output=True,
             text=True,
             timeout=timeout,
+            stdin=subprocess.DEVNULL,  # evita "Warning: Input is not a terminal (fd=0)"
         )
     except subprocess.TimeoutExpired:
         return ExecutionResult(stdout="", stderr="Command timed out.", returncode=-1)

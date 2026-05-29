@@ -20,7 +20,13 @@ check:
     make check-health
 
 # Ejecuta PHOMBER directamente (sin interpretación del SLM)
-# Útil para depurar la salida raw
 # Uso: just osint raw "-p +525512345678"
 raw args:
     podman exec phomber phomber -s {{args}}
+
+# Debug interactivo de PHOMBER: muestra stdout/stderr/exit code sin LLM
+# Uso: just osint debug               → modo interactivo (bucle)
+#      just osint debug "+52 55 ..."  → número directo
+#      just osint debug -- --help     → ayuda de PHOMBER
+debug *args:
+    uv run --script scripts/python/phomber_debug.py {{args}}
