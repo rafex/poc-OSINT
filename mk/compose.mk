@@ -1,6 +1,4 @@
-COMPOSE_CMD    := podman compose
-COMPOSE_FILE   := compose.yaml
-
+# COMPOSE_CMD y COMPOSE_FILE vienen de mk/vars.mk
 .PHONY: compose-build-phomber compose-build-sherlock compose-build-all compose-build-llama \
         compose-up compose-up-local \
         compose-down compose-stop \

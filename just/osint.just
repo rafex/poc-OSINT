@@ -8,11 +8,11 @@ set working-directory := ".."
 # Ejecuta una consulta OSINT con número de teléfono
 # Uso: just osint query "+52 55 1234 5678"
 query phone:
-    uv run -m orchestrator.main "{{phone}}"
+    uv --directory orchestrator run -m orchestrator.main "{{phone}}"
 
 # Modo interactivo: el orquestador pide la query
 interactive:
-    uv run -m orchestrator.main
+    uv --directory orchestrator run -m orchestrator.main
 
 # Verifica la conexión con el contenedor PHOMBER antes de consultar
 check:

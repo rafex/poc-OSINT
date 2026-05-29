@@ -1,0 +1,31 @@
+[project]
+name = "edge-osint-scripts"
+version = "0.1.0"
+description = "Utility scripts for edge-osint-lab (PEP 723 standalone scripts)"
+requires-python = ">=3.11"
+# Las dependencias de cada script se declaran inline con PEP 723.
+# Este pyproject.toml gestiona el entorno de desarrollo (lint, format).
+dependencies = []
+
+# ── Dependencias de desarrollo ────────────────────────────────────────────────
+[dependency-groups]
+dev = [
+    "ruff>=0.4",
+    "mypy>=1.10",
+]
+
+# ── Ruff ──────────────────────────────────────────────────────────────────────
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E501"]
+
+# ── Mypy ──────────────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+# Los scripts PEP 723 no se analizan como paquete — typecheck individual
+exclude = ["^(setup_age|edit_secrets|export_secrets|check_deps|download_model|health_check)\\.py$"]

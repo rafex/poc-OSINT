@@ -32,12 +32,14 @@ MODEL_FILE      := qwen2-0_5b-instruct-q4_k_m.gguf
 MODEL_PATH      := $(MODEL_DIR)/$(MODEL_FILE)
 
 # ── Compose ───────────────────────────────────────────────────────────────────
-COMPOSE_CMD     := podman compose
-COMPOSE_FILE    := compose.yaml
+COMPOSE_CMD          := podman compose
+COMPOSE_FILE         := container/compose.yaml
 
-# ── Python / proyecto ─────────────────────────────────────────────────────────
-PYTHON_PKG      := orchestrator
-SCRIPTS_DIR     := scripts
+# ── Python / proyectos ────────────────────────────────────────────────────────
+ORCHESTRATOR_DIR := orchestrator
+SCRIPTS_DIR      := scripts
+# Nombre del paquete dentro de orchestrator/ (usado por lint/typecheck)
+PYTHON_PKG       := orchestrator
 
 # ── Colores ANSI ──────────────────────────────────────────────────────────────
 BOLD   := \033[1m

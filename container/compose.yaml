@@ -1,0 +1,94 @@
+# edge-osint-lab — Podman Compose para validación local
+#
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │  El ORQUESTADOR corre en el HOST, no en compose.                        │
+# │  Este compose gestiona la INFRAESTRUCTURA solamente:                    │
+# │    · phomber      → siempre activo                                      │
+# │    · sherlock     → siempre activo                                      │
+# │    · llama-server → solo con --profile local-llm                        │
+# └─────────────────────────────────────────────────────────────────────────┘
+#
+# Perfiles:
+#   podman compose -f container/compose.yaml up -d
+#   podman compose -f container/compose.yaml --profile local-llm up -d
+#
+# Variables de entorno leídas desde .env:
+#   LLAMA_PORT, MODEL_DIR, MODEL_FILE, LLAMA_CTX, LLAMA_THREADS
+
+name: edge-osint-lab
+
+services:
+
+  # ── PHOMBER ───────────────────────────────────────────────────────────────
+  phomber:
+    build:
+      context: ..                      # raíz del proyecto
+      dockerfile: container/Containerfile
+    image: localhost/phomber:latest
+    container_name: phomber
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python3", "--version"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ── Sherlock ──────────────────────────────────────────────────────────────
+  sherlock:
+    build:
+      context: ..
+      dockerfile: container/Containerfile.sherlock
+    image: localhost/sherlock:latest
+    container_name: sherlock
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "sherlock", "--version"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # ── llama-server (perfil: local-llm) ────────────────────────────────────
+  llama-server:
+    profiles: ["local-llm"]
+    build:
+      context: ..
+      dockerfile: container/Containerfile.llama
+    image: localhost/llama-server:latest
+    container_name: llama-server
+    restart: unless-stopped
+    ports:
+      - "${LLAMA_PORT:-8080}:8080"
+    volumes:
+      - type: bind
+        source: ${MODEL_DIR:-$HOME/models}
+        target: /models
+        read_only: true
+    command:
+      - --model
+      - /models/${MODEL_FILE:-qwen2-0_5b-instruct-q4_k_m.gguf}
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8080"
+      - --ctx-size
+      - "${LLAMA_CTX:-2048}"
+      - --threads
+      - "${LLAMA_THREADS:-4}"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s

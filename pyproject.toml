@@ -1,47 +1,16 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+# edge-osint-lab — Workspace root
+#
+# Este archivo configura el espacio de trabajo UV.
+# NO es un paquete instalable.
+#
+# Proyectos independientes:
+#   orchestrator/   → paquete Python del orquestador (openai, uv sync)
+#   scripts/        → scripts PEP 723 (cada uno gestiona sus propias deps)
+#
+# Uso desde la raíz:
+#   uv --directory orchestrator sync
+#   uv --directory orchestrator run -m orchestrator.main
+#   uv --directory scripts sync --dev
 
-[project]
-name = "edge-osint-lab"
-version = "0.1.0"
-description = "PHOMBER + Qwen2 SLM PoC — local AI-assisted OSINT on Raspberry Pi 4B"
-license = { text = "MIT" }
-requires-python = ">=3.11"
-dependencies = [
-    "openai>=1.30",
-]
-
-[project.scripts]
-osint = "orchestrator.main:main"
-
-[tool.hatch.build.targets.wheel]
-packages = ["orchestrator"]
-
-# ── Dependencias de desarrollo (uv) ───────────────────────────────────────────
-[dependency-groups]
-dev = [
-    "ruff>=0.4",
-    "mypy>=1.10",
-    "pytest>=8",
-]
-
-# ── Ruff ──────────────────────────────────────────────────────────────────────
-[tool.ruff]
-target-version = "py311"
-line-length = 100
-
-[tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM"]
-ignore = ["E501"]
-
-# ── Mypy ──────────────────────────────────────────────────────────────────────
-[tool.mypy]
-python_version = "3.11"
-strict = true
-ignore_missing_imports = true
-
-# ── Pytest ────────────────────────────────────────────────────────────────────
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-v"
+[tool.uv.workspace]
+members = ["orchestrator"]

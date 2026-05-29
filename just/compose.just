@@ -59,7 +59,7 @@ logs:
 
 # Sigue los logs de un servicio específico
 logs-service service:
-    podman compose -f compose.yaml --profile local-llm logs --follow {{service}}
+    podman compose -f container/compose.yaml --profile local-llm logs --follow {{service}}
 
 # Abre shell en el contenedor PHOMBER
 shell:

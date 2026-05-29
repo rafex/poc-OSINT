@@ -1,54 +1,78 @@
-.PHONY: install install-dev sync lint format typecheck test build-wheel clean-python
+# Todos los comandos uv se ejecutan con --directory para apuntar al proyecto
+# correcto sin cambiar el directorio de trabajo del shell.
+UV_ORCH  := $(UV) --directory $(ORCHESTRATOR_DIR)
+UV_SCRIP := $(UV) --directory $(SCRIPTS_DIR)
 
-## install           Instala dependencias de producción (uv sync)
+.PHONY: install install-dev sync lint format typecheck test build-wheel clean-python \
+        lint-scripts format-scripts
+
+## install           Instala dependencias de producción del orquestador
 install:
-	@printf "$(CYAN)[python]$(RESET) Instalando dependencias…\n"
-	$(UV) sync --no-dev
+	@printf "$(CYAN)[python]$(RESET) Instalando dependencias del orquestador…\n"
+	$(UV_ORCH) sync --no-dev
 	@printf "$(GREEN)[python]$(RESET) Entorno listo.\n"
 
-## install-dev       Instala dependencias incluyendo dev (ruff, mypy, pytest)
+## install-dev       Instala dependencias incluyendo herramientas de desarrollo
 install-dev:
-	@printf "$(CYAN)[python]$(RESET) Instalando dependencias de desarrollo…\n"
-	$(UV) sync
+	@printf "$(CYAN)[python]$(RESET) Instalando deps de desarrollo…\n"
+	$(UV_ORCH) sync
 	@printf "$(GREEN)[python]$(RESET) Entorno dev listo.\n"
 
 ## sync              Sincroniza el lockfile sin instalar extras
 sync:
-	$(UV) sync --frozen
+	$(UV_ORCH) sync --frozen
 
-## lint              Verifica estilo y errores con ruff
+## lint              Verifica estilo y errores del orquestador (ruff)
 lint:
-	@printf "$(CYAN)[python]$(RESET) Ejecutando ruff check…\n"
-	$(UV) run ruff check $(PYTHON_PKG)/
+	@printf "$(CYAN)[python]$(RESET) ruff check orchestrator/…\n"
+	$(UV_ORCH) run ruff check $(PYTHON_PKG)/
 
-## format            Formatea el código con ruff
+## format            Formatea el código del orquestador (ruff)
 format:
-	@printf "$(CYAN)[python]$(RESET) Formateando con ruff…\n"
-	$(UV) run ruff format $(PYTHON_PKG)/
+	@printf "$(CYAN)[python]$(RESET) ruff format orchestrator/…\n"
+	$(UV_ORCH) run ruff format $(PYTHON_PKG)/
 
 ## format-check      Verifica formato sin modificar (para CI)
 format-check:
-	$(UV) run ruff format --check $(PYTHON_PKG)/
+	$(UV_ORCH) run ruff format --check $(PYTHON_PKG)/
 
-## typecheck         Verifica tipos con mypy
+## typecheck         Verifica tipos del orquestador (mypy)
 typecheck:
-	@printf "$(CYAN)[python]$(RESET) Verificando tipos con mypy…\n"
-	$(UV) run mypy $(PYTHON_PKG)/
+	@printf "$(CYAN)[python]$(RESET) mypy orchestrator/…\n"
+	$(UV_ORCH) run mypy $(PYTHON_PKG)/
 
-## test              Ejecuta la suite de pruebas con pytest
+## test              Ejecuta la suite de pruebas del orquestador
 test:
-	@printf "$(CYAN)[python]$(RESET) Ejecutando tests…\n"
-	$(UV) run pytest tests/ -v
+	@printf "$(CYAN)[python]$(RESET) pytest…\n"
+	$(UV_ORCH) run pytest tests/ -v
 
-## build-wheel       Empaqueta el proyecto como wheel
+## build-wheel       Empaqueta el orquestador como wheel
 build-wheel:
 	@printf "$(CYAN)[python]$(RESET) Construyendo wheel…\n"
-	$(UV) build
-	@printf "$(GREEN)[python]$(RESET) Artefactos en dist/\n"
+	$(UV_ORCH) build
+	@printf "$(GREEN)[python]$(RESET) Artefactos en $(ORCHESTRATOR_DIR)/dist/\n"
+
+## lint-scripts      Verifica estilo de los scripts PEP 723 (ruff)
+lint-scripts:
+	@printf "$(CYAN)[python]$(RESET) ruff check scripts/…\n"
+	$(UV_SCRIP) run ruff check .
+
+## format-scripts    Formatea los scripts PEP 723 (ruff)
+format-scripts:
+	$(UV_SCRIP) run ruff format .
 
 ## clean-python      Elimina cachés y artefactos de Python
 clean-python:
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.py[cod]" -delete 2>/dev/null || true
-	rm -rf dist/ build/ .eggs/ .coverage htmlcov/ .pytest_cache/ .mypy_cache/ .ruff_cache/
+	rm -rf \
+		$(ORCHESTRATOR_DIR)/dist/ \
+		$(ORCHESTRATOR_DIR)/build/ \
+		$(ORCHESTRATOR_DIR)/.coverage \
+		$(ORCHESTRATOR_DIR)/htmlcov/ \
+		$(ORCHESTRATOR_DIR)/.pytest_cache/ \
+		$(ORCHESTRATOR_DIR)/.mypy_cache/ \
+		$(ORCHESTRATOR_DIR)/.ruff_cache/ \
+		$(SCRIPTS_DIR)/.ruff_cache/ \
+		$(SCRIPTS_DIR)/.mypy_cache/
 	@printf "$(GREEN)[python]$(RESET) Caché limpiado.\n"
