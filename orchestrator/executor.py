@@ -5,7 +5,9 @@ import subprocess
 from dataclasses import dataclass
 
 CONTAINER_NAME = "phomber"
-PHOMBER_CMD = ["python3", "phomber.py"]
+# -s (silent): suprime el banner/logo de PHOMBER, necesario para ejecución
+# no-interactiva desde el orquestador (sin TTY asignado al proceso).
+PHOMBER_CMD = ["phomber", "-s"]
 
 # Explicit whitelist: only these flags reach the container.
 _ALLOWED_FLAGS: frozenset[str] = frozenset({

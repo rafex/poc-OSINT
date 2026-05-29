@@ -1,18 +1,53 @@
-FROM python:3.11-slim-bookworm
+# ── Stage 1: source ───────────────────────────────────────────────────────────
+# Clona el repositorio de PHOMBER. Este stage NO llega a la imagen final,
+# por lo que git y sus dependencias no aumentan el tamaño del runtime.
+FROM python:3.11-slim-bookworm AS source
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
-        curl \
-        whois \
-        dnsutils \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --depth 1 https://github.com/s41r4j/phomber /opt/phomber
+RUN git clone --depth 1 https://github.com/s41r4j/phomber /src/phomber
+
+# ── Stage 2: runtime ──────────────────────────────────────────────────────────
+FROM python:3.11-slim-bookworm
+
+# whois: requerido por python-whois para resolver registros WHOIS del sistema.
+# ca-certificates: necesario para las peticiones HTTPS de PHOMBER.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        whois \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copia solo el código fuente; git y sus librerías se quedan en el stage anterior.
+COPY --from=source /src/phomber /opt/phomber
 
 WORKDIR /opt/phomber
 
-RUN pip install --no-cache-dir -r requirements.txt
+# Lee las dependencias directamente del pyproject.toml usando tomllib (built-in
+# en Python 3.11+). Evita hardcodear la lista y no depende de requirements.txt
+# (eliminado en upstream) ni del entry-point roto del pyproject.toml.
+#
+# Nota: Podman imagebuilder (sin BuildKit) no soporta heredocs en RUN, por lo
+# que el código Python se pasa inline con `python3 -c`.
+RUN python3 -c "\
+import tomllib, subprocess, sys; \
+f = open('pyproject.toml', 'rb'); \
+meta = tomllib.load(f); \
+f.close(); \
+version = meta['project']['version']; \
+deps = meta['project']['dependencies']; \
+print(f'[phomber] v{version} — {len(deps)} deps desde pyproject.toml'); \
+[print(f'  + {d}') for d in deps]; \
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--no-cache-dir'] + deps) \
+"
 
-# Keep container alive so `podman exec` can invoke phomber on demand.
+# Wrapper en PATH para que `podman exec phomber phomber <args>` funcione
+# desde cualquier directorio de trabajo sin depender de WORKDIR.
+RUN printf '#!/bin/sh\nexec python3 /opt/phomber/phomber.py "$@"\n' \
+        > /usr/local/bin/phomber \
+    && chmod +x /usr/local/bin/phomber
+
+# Mantiene el contenedor vivo; phomber se invoca bajo demanda via `podman exec`.
 CMD ["sleep", "infinity"]
