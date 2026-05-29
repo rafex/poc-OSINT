@@ -68,11 +68,10 @@ services:
     container_name: gitfive
     restart: unless-stopped
     volumes:
-      - type: bind
-        source: ${GITFIVE_CONFIG_DIR:-/root/.gitfive}
-        target: /root/.gitfive
-        bind:
-          create_host_path: true
+      # Named volume: no requiere permisos en el host, persiste entre reinicios.
+      # Para usar un directorio del host en su lugar, define GITFIVE_CONFIG_DIR
+      # en .env y reemplaza por: - type: bind / source: ${GITFIVE_CONFIG_DIR} / target: /root/.gitfive
+      - gitfive-config:/root/.gitfive
     security_opt:
       - no-new-privileges:true
     healthcheck:
@@ -155,3 +154,9 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
+
+# ── Named volumes ──────────────────────────────────────────────────────────────
+volumes:
+  gitfive-config:
+    # Token de GitHub de GitFive — persiste entre reinicios del contenedor.
+    # Inspeccionable con: podman volume inspect edge-osint-lab_gitfive-config

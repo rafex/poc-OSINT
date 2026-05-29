@@ -73,9 +73,10 @@ compose-logs:
 ## compose-restart        Reinicia todos los servicios activos
 compose-restart: compose-down compose-up
 
-## compose-clean          Elimina contenedores + imágenes construidas localmente
+## compose-clean          Elimina contenedores, imágenes y volumes locales
 compose-clean: compose-down
-	@printf "$(YELLOW)[compose]$(RESET) Eliminando imágenes locales…\n"
+	@printf "$(YELLOW)[compose]$(RESET) Eliminando imágenes y volumes locales…\n"
+	$(PODMAN) volume rm edge-osint-lab_gitfive-config 2>/dev/null || true
 	$(PODMAN) rmi $(PHOMBER_IMAGE)          2>/dev/null || true
 	$(PODMAN) rmi $(SHERLOCK_IMAGE)         2>/dev/null || true
 	$(PODMAN) rmi $(GITFIVE_IMAGE)          2>/dev/null || true
