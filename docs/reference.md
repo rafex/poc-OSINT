@@ -39,6 +39,18 @@ poc-OSINT/
 │   │   ├── edit_secrets.py
 │   │   └── export_secrets.py
 │   ├── shellscript/            ← scripts shell
+│   │   ├── secrets_check.sh
+│   │   ├── secrets_pubkey.sh
+│   │   ├── secrets_export.sh
+│   │   ├── env_init.sh
+│   │   ├── wait_llama.sh
+│   │   ├── check_model.sh
+│   │   ├── llama_clone.sh
+│   │   ├── llama_start.sh
+│   │   ├── llama_stop.sh
+│   │   ├── llama_status.sh
+│   │   ├── check_container.sh
+│   │   ├── check_api_config.sh
 │   │   └── start_container.sh
 │   └── pyproject.toml          ← tooling para scripts/python/ (ruff, mypy)
 │
