@@ -19,6 +19,7 @@ mod dev     'just/dev.just'
 mod stack   'just/stack.just'
 mod osint   'just/osint.just'
 mod compose 'just/compose.just'
+mod secrets 'just/secrets.just'
 
 # ── Receta por defecto: muestra ayuda ─────────────────────────────────────────
 default:

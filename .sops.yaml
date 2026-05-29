@@ -1,0 +1,12 @@
+# SOPS — configuración de cifrado para edge-osint-lab
+#
+# Clave privada age: ~/.age/key.txt  ← NUNCA en el repositorio
+# Clave pública     : la de abajo     ← segura de commitear
+#
+# Setup inicial: just secrets setup
+# Editar secretos:  just secrets edit
+
+creation_rules:
+  - path_regex: secrets/.*\.ya?ml$
+    age: >-
+      age15zd2ajjrgfy8vzhuz3mfz22l3ghtsvvqqfc2hdpfyul40rp6d5qqsl9jzv

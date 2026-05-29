@@ -19,8 +19,19 @@ pip-wheel-metadata/
 .env.*
 !.env.example
 *.secret
-secrets/
 credentials/
+
+# secrets/ — solo ignorar versiones descifradas y temporales.
+# secrets/secrets.enc.yaml (cifrado con SOPS+age) SÍ se commitea.
+secrets/*.dec.yaml
+secrets/*.dec.json
+secrets/*.plaintext.*
+secrets/*.tmp
+secrets/age-*.key
+
+# La clave privada age vive en ~/.age/ (fuera del repo), nunca aquí.
+*.age-key
+age-secret-key*
 config/local.py
 config/local.yaml
 config/local.json

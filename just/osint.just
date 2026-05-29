@@ -1,3 +1,5 @@
+set working-directory := ".."
+
 # osint.just — ejecución de consultas OSINT
 # Llamado con: just osint <recipe>
 #
@@ -21,4 +23,4 @@ check:
 # Útil para depurar la salida raw
 # Uso: just osint raw "-p +525512345678"
 raw args:
-    podman exec phomber python3 phomber.py {{args}}
+    podman exec phomber phomber -s {{args}}

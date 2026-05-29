@@ -3,12 +3,12 @@
 ## check-deps         Verifica herramientas requeridas (uv, podman, make, git)
 check-deps:
 	@printf "$(CYAN)[checks]$(RESET) Verificando dependencias del sistema…\n"
-	$(UV) run $(SCRIPTS_DIR)/check_deps.py
+	$(UV) run --script $(SCRIPTS_DIR)/check_deps.py
 
 ## check-health       Verifica que el stack completo esté operativo
 check-health:
 	@printf "$(CYAN)[checks]$(RESET) Verificando salud del stack…\n"
-	$(UV) run $(SCRIPTS_DIR)/health_check.py
+	$(UV) run --script $(SCRIPTS_DIR)/health_check.py
 
 ## check-container    Verifica solo el estado del contenedor PHOMBER
 check-container:

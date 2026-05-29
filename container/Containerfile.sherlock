@@ -1,0 +1,30 @@
+# ── Stage 1: source ───────────────────────────────────────────────────────────
+# Clona Sherlock. Git no llega a la imagen final.
+FROM python:3.11-slim-bookworm AS source
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 https://github.com/sherlock-project/sherlock /src/sherlock
+
+# ── Stage 2: runtime ──────────────────────────────────────────────────────────
+FROM python:3.11-slim-bookworm
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=source /src/sherlock /opt/sherlock
+
+WORKDIR /opt/sherlock
+
+# pip resuelve el build backend Poetry (poetry-core) de forma automática
+# usando el entorno de build aislado definido en [build-system].
+# No se necesita instalar Poetry en la imagen final.
+# El resultado instala el comando `sherlock` directamente en PATH.
+RUN pip install --no-cache-dir .
+
+# Mantiene el contenedor vivo; sherlock se invoca bajo demanda via `podman exec`.
+CMD ["sleep", "infinity"]

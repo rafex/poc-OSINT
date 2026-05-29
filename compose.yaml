@@ -38,6 +38,26 @@ services:
       retries: 3
       start_period: 10s
 
+    # ── Sherlock ──────────────────────────────────────────────────────────────
+  sherlock:
+    build:
+      context: .
+      dockerfile: container/Containerfile.sherlock
+    image: localhost/sherlock:latest
+    container_name: sherlock
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "sherlock", "--version"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
   # ── llama-server (perfil: local-llm) ────────────────────────────────────
   # Activa con: podman compose --profile local-llm up -d
   llama-server:

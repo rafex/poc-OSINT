@@ -1,3 +1,5 @@
+set working-directory := ".."
+
 # setup.just — preparación del entorno
 # Llamado con: just setup <recipe>
 
@@ -13,14 +15,14 @@ install-dev:
 # Uso: just setup download-model
 # Uso con modelo custom: just setup download-model "Qwen/Qwen2-0.5B-Instruct-GGUF" "qwen2-0_5b-instruct-q4_k_m.gguf"
 download-model repo="Qwen/Qwen2-0.5B-Instruct-GGUF" file="qwen2-0_5b-instruct-q4_k_m.gguf":
-    uv run scripts/download_model.py --repo "{{repo}}" --file "{{file}}"
+    uv run --script scripts/download_model.py --repo "{{repo}}" --file "{{file}}"
 
 # Configuración completa de Raspberry Pi 4B desde cero
 # Ejecuta: instala deps, construye imagen, compila llama.cpp, descarga modelo
 raspi model_path="$HOME/models":
     @echo "=== Setup completo Raspberry Pi 4B ==="
     make install
-    make build-image
+    make build-all-images
     make build-llama
     just setup download-model
     @echo "=== Setup completado. Ejecuta: just stack start ==="

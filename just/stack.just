@@ -1,3 +1,5 @@
+set working-directory := ".."
+
 # stack.just — ciclo de vida del stack completo
 # Llamado con: just stack <recipe>
 #
@@ -38,7 +40,7 @@ status:
     @echo "=== Estado del stack ==="
     make container-status
     make llama-status
-    uv run scripts/health_check.py
+    uv run --script scripts/health_check.py
 
 # Sigue los logs del contenedor PHOMBER
 logs:

@@ -3,10 +3,20 @@ UV              := uv
 PODMAN          := podman
 GIT             := git
 
-# ── Contenedor ────────────────────────────────────────────────────────────────
-IMAGE_NAME      := localhost/phomber:latest
-CONTAINER_NAME  := phomber
-CONTAINERFILE   := container/Containerfile
+# ── Contenedores OSINT ────────────────────────────────────────────────────────
+# PHOMBER — reconocimiento de números de teléfono
+PHOMBER_IMAGE         := localhost/phomber:latest
+PHOMBER_CONTAINER     := phomber
+PHOMBER_CONTAINERFILE := container/Containerfile
+
+# Sherlock — búsqueda de usernames en redes sociales
+SHERLOCK_IMAGE         := localhost/sherlock:latest
+SHERLOCK_CONTAINER     := sherlock
+SHERLOCK_CONTAINERFILE := container/Containerfile.sherlock
+
+# Alias heredado (apunta a PHOMBER por compatibilidad con checks.mk)
+CONTAINER_NAME := $(PHOMBER_CONTAINER)
+IMAGE_NAME     := $(PHOMBER_IMAGE)
 
 # ── llama.cpp ─────────────────────────────────────────────────────────────────
 LLAMA_REPO      := https://github.com/ggml-org/llama.cpp

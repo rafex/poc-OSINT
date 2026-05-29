@@ -1,3 +1,5 @@
+set working-directory := ".."
+
 # compose.just — gestión del stack vía Podman Compose (validación local)
 # Llamado con: just compose <recipe>
 #
@@ -49,7 +51,7 @@ restart:
 status:
     make compose-ps
     @echo ""
-    uv run scripts/health_check.py
+    uv run --script scripts/health_check.py
 
 # Sigue los logs de todos los servicios
 logs:

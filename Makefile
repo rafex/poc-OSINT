@@ -5,10 +5,12 @@
 # Regla de oro: Make NO llama a just. Just puede llamar a make.
 #
 # Uso rápido:
-#   make              → muestra esta ayuda
-#   make build-image  → construye imagen Podman de PHOMBER
-#   make install-dev  → instala dependencias Python con uv
-#   make check-all    → valida todo el proyecto
+#   make                     → muestra esta ayuda
+#   make build-image-phomber → construye imagen Podman de PHOMBER
+#   make build-image-sherlock→ construye imagen Podman de Sherlock
+#   make build-all-images    → construye todas las imágenes OSINT
+#   make install-dev         → instala dependencias Python con uv
+#   make check-all           → valida todo el proyecto
 
 .DEFAULT_GOAL := help
 
@@ -25,13 +27,14 @@ include mk/python.mk
 include mk/llama.mk
 include mk/checks.mk
 include mk/compose.mk
+include mk/secrets.mk
 
 # ── Targets compuestos ────────────────────────────────────────────────────────
 
 .PHONY: build clean help
 
-## build              Construye imagen de contenedor + wheel Python
-build: build-image build-wheel
+## build              Construye todas las imágenes OSINT + wheel Python
+build: build-all-images build-wheel
 
 ## clean              Limpia todos los artefactos generados
 clean: clean-python clean-image
@@ -42,7 +45,7 @@ clean: clean-python clean-image
 help:
 	@printf "$(BOLD)edge-osint-lab$(RESET) — targets disponibles\n\n"
 	@grep -hE '^## [a-zA-Z_-]' \
-		mk/vars.mk mk/container.mk mk/python.mk mk/llama.mk mk/checks.mk mk/compose.mk Makefile \
+		mk/vars.mk mk/container.mk mk/python.mk mk/llama.mk mk/checks.mk mk/compose.mk mk/secrets.mk Makefile \
 		| sed 's/^## //' \
 		| awk -F'  +' '{ printf "  $(CYAN)%-22s$(RESET) %s\n", $$1, $$2 }'
 	@printf "\n$(YELLOW)Nota:$(RESET) para tareas de flujo de trabajo usa $(BOLD)just$(RESET)\n"
