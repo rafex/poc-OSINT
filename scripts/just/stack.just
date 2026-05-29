@@ -1,4 +1,4 @@
-set working-directory := ".."
+set working-directory := "../.."
 
 # stack.just — ciclo de vida del stack completo
 # Llamado con: just stack <recipe>

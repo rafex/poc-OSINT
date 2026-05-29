@@ -1,4 +1,4 @@
-set working-directory := ".."
+set working-directory := "../.."
 
 # setup.just — preparación del entorno
 # Llamado con: just setup <recipe>

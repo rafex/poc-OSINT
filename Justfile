@@ -14,12 +14,12 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 set dotenv-load := true
 
 # ── Módulos ───────────────────────────────────────────────────────────────────
-mod setup   'just/setup.just'
-mod dev     'just/dev.just'
-mod stack   'just/stack.just'
-mod osint   'just/osint.just'
-mod compose 'just/compose.just'
-mod secrets 'just/secrets.just'
+mod setup   'scripts/just/setup.just'
+mod dev     'scripts/just/dev.just'
+mod stack   'scripts/just/stack.just'
+mod osint   'scripts/just/osint.just'
+mod compose 'scripts/just/compose.just'
+mod secrets 'scripts/just/secrets.just'
 
 # ── Receta por defecto: muestra ayuda ─────────────────────────────────────────
 default:

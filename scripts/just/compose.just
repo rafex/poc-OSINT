@@ -1,4 +1,4 @@
-set working-directory := ".."
+set working-directory := "../.."
 
 # compose.just — gestión del stack vía Podman Compose (validación local)
 # Llamado con: just compose <recipe>

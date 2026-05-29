@@ -1,4 +1,4 @@
-set working-directory := ".."
+set working-directory := "../.."
 
 # osint.just — ejecución de consultas OSINT
 # Llamado con: just osint <recipe>

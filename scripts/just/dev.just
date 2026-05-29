@@ -1,4 +1,4 @@
-set working-directory := ".."
+set working-directory := "../.."
 
 # dev.just — flujo de trabajo de desarrollo
 # Llamado con: just dev <recipe>

@@ -12,34 +12,49 @@ Guía completa de todos los targets de `make` y recetas de `just` disponibles en
 
 ```
 poc-OSINT/
-├── Makefile                    ← orquesta todos los mk/
-├── Justfile                    ← orquesta todos los just/
-├── mk/                         ← módulos Make (build)
-│   ├── vars.mk
-│   ├── container.mk
-│   ├── python.mk
-│   ├── llama.mk
-│   ├── checks.mk
-│   ├── compose.mk
-│   └── secrets.mk
-├── just/                       ← módulos Just (flujos)
-│   ├── setup.just
-│   ├── dev.just
-│   ├── stack.just
-│   ├── osint.just
-│   ├── compose.just
-│   └── secrets.just
+├── Makefile                    ← orquesta todos los scripts/mk/
+├── Justfile                    ← orquesta todos los scripts/just/
+│
+├── scripts/                    ← todos los scripts y módulos de automatización
+│   ├── mk/                     ← módulos Make (build)
+│   │   ├── vars.mk
+│   │   ├── container.mk
+│   │   ├── python.mk
+│   │   ├── llama.mk
+│   │   ├── checks.mk
+│   │   ├── compose.mk
+│   │   └── secrets.mk
+│   ├── just/                   ← módulos Just (flujos)
+│   │   ├── setup.just
+│   │   ├── dev.just
+│   │   ├── stack.just
+│   │   ├── osint.just
+│   │   ├── compose.just
+│   │   └── secrets.just
+│   ├── python/                 ← scripts PEP 723 (uv run --script)
+│   │   ├── check_deps.py
+│   │   ├── health_check.py
+│   │   ├── download_model.py
+│   │   ├── setup_age.py
+│   │   ├── edit_secrets.py
+│   │   └── export_secrets.py
+│   ├── shellscript/            ← scripts shell
+│   │   └── start_container.sh
+│   └── pyproject.toml          ← tooling para scripts/python/ (ruff, mypy)
+│
 ├── orchestrator/               ← proyecto Python independiente
 │   ├── pyproject.toml
-│   └── src/orchestrator/
-├── scripts/
-│   ├── python/                 ← scripts PEP 723
-│   └── shellscript/            ← scripts shell
+│   └── src/orchestrator/       ← paquete Python (src layout)
+│       ├── main.py
+│       ├── executor.py
+│       ├── llm_client.py
+│       └── intent_parser.py
+│
 └── container/                  ← imágenes y compose
-    ├── Containerfile
-    ├── Containerfile.sherlock
-    ├── Containerfile.llama
-    └── compose.yaml
+    ├── Containerfile           ← imagen PHOMBER
+    ├── Containerfile.sherlock  ← imagen Sherlock
+    ├── Containerfile.llama     ← imagen llama-server
+    └── compose.yaml            ← Podman Compose (context: ..)
 ```
 
 ---

@@ -19,15 +19,15 @@ MAKEFLAGS += --no-builtin-rules
 .SUFFIXES:
 
 # Incluir variables compartidas primero
-include mk/vars.mk
+include scripts/mk/vars.mk
 
 # Incluir módulos de build
-include mk/container.mk
-include mk/python.mk
-include mk/llama.mk
-include mk/checks.mk
-include mk/compose.mk
-include mk/secrets.mk
+include scripts/mk/container.mk
+include scripts/mk/python.mk
+include scripts/mk/llama.mk
+include scripts/mk/checks.mk
+include scripts/mk/compose.mk
+include scripts/mk/secrets.mk
 
 # ── Targets compuestos ────────────────────────────────────────────────────────
 
@@ -45,7 +45,14 @@ clean: clean-python clean-image
 help:
 	@printf "$(BOLD)edge-osint-lab$(RESET) — targets disponibles\n\n"
 	@grep -hE '^## [a-zA-Z_-]' \
-		mk/vars.mk mk/container.mk mk/python.mk mk/llama.mk mk/checks.mk mk/compose.mk mk/secrets.mk Makefile \
+		scripts/mk/vars.mk \
+		scripts/mk/container.mk \
+		scripts/mk/python.mk \
+		scripts/mk/llama.mk \
+		scripts/mk/checks.mk \
+		scripts/mk/compose.mk \
+		scripts/mk/secrets.mk \
+		Makefile \
 		| sed 's/^## //' \
 		| awk -F'  +' '{ printf "  $(CYAN)%-22s$(RESET) %s\n", $$1, $$2 }'
 	@printf "\n$(YELLOW)Nota:$(RESET) para tareas de flujo de trabajo usa $(BOLD)just$(RESET)\n"

@@ -1,4 +1,4 @@
-set working-directory := ".."
+set working-directory := "../.."
 
 # secrets.just — gestión de secretos con SOPS + age
 # Llamado con: just secrets <recipe>
