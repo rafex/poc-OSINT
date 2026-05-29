@@ -382,11 +382,10 @@ just secrets export   # genera .env para uso local
 
 | Variable | Default | Descripción |
 |---|---|---|
-| `LLM_PROVIDER` | `groq\|deepseek\|local` | Cadena de proveedores LLM (pipe-separated) |
-| `GROQ_API_KEY` | — | API key de Groq (`gsk_...`) |
-| `GROQ_MODEL` | `llama-3.1-8b-instant` | Modelo Groq |
-| `DEEPSEEK_API_KEY` | — | API key de DeepSeek (`sk-...`) |
-| `DEEPSEEK_MODEL` | `deepseek-chat` | Modelo DeepSeek |
+| `LLM_PROVIDER` | `openai-compat\|local` | Cadena de proveedores LLM (pipe-separated) |
+| `PROVIDER_LLM_BASE_URL` | — | URL base del API remoto (ej: `https://api.groq.com/openai/v1`) |
+| `PROVIDER_LLM_API_KEY` | — | API key del proveedor remoto |
+| `PROVIDER_LLM_MODEL` | `llama-3.1-8b-instant` | Modelo a usar en el proveedor remoto |
 | `LLAMA_SERVER_URL` | `http://localhost:8080` | URL del servidor llama.cpp local |
 | `LOCAL_MODEL_NAME` | `qwen2-0.5b-instruct-q4_k_m` | Nombre descriptivo del modelo local |
 | `MODEL_DIR` | `$HOME/models` | Directorio de modelos GGUF |

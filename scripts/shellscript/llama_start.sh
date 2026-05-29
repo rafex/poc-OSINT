@@ -1,16 +1,26 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-LLAMA_BIN="${LLAMA_BIN:-$HOME/llama.cpp/build/bin/llama-server}"
 LLAMA_PORT="${LLAMA_PORT:-8080}"
 MODEL_PATH="${MODEL_PATH:-$HOME/models/qwen2-0_5b-instruct-q4_k_m.gguf}"
 LLAMA_CTX="${LLAMA_CTX:-2048}"
 LLAMA_THREADS="${LLAMA_THREADS:-4}"
 GREEN=$'\033[32m'; YELLOW=$'\033[33m'; CYAN=$'\033[36m'; RED=$'\033[31m'; RESET=$'\033[0m'
 
-if [ ! -f "${LLAMA_BIN}" ]; then
-    printf "%b[llama]%b Binario no encontrado: %s\n" "${RED}" "${RESET}" "${LLAMA_BIN}"
-    printf "       Ejecuta: make build-llama\n"
+# Resolución del binario: variable explícita > PATH > build local
+if [ -n "${LLAMA_BIN:-}" ] && [ -f "${LLAMA_BIN}" ]; then
+    : # usar LLAMA_BIN tal cual
+elif LLAMA_BIN=$(command -v llama-server 2>/dev/null); then
+    printf "%b[llama]%b Binario descubierto en PATH: %s\n" "${CYAN}" "${RESET}" "${LLAMA_BIN}"
+elif [ -f "${HOME}/llama.cpp/build/bin/llama-server" ]; then
+    LLAMA_BIN="${HOME}/llama.cpp/build/bin/llama-server"
+    printf "%b[llama]%b Usando build local: %s\n" "${CYAN}" "${RESET}" "${LLAMA_BIN}"
+else
+    printf "%b[llama]%b llama-server no encontrado.\n" "${RED}" "${RESET}"
+    printf "  Opciones:\n"
+    printf "  1. Instala en PATH: sudo cp llama-server /usr/local/bin/\n"
+    printf "  2. Compila con:     make build-llama\n"
+    printf "  3. Define en .env:  LLAMA_BIN=/ruta/al/binario\n"
     exit 1
 fi
 if [ ! -f "${MODEL_PATH}" ]; then

@@ -20,7 +20,7 @@ console = Console()
 
 LLAMA_URL      = os.getenv("LLAMA_SERVER_URL", "http://127.0.0.1:8080")
 CONTAINER_NAME = os.getenv("CONTAINER_NAME", "phomber")
-LLM_PROVIDER   = os.getenv("LLM_PROVIDER", "groq|deepseek|local")
+LLM_PROVIDER   = os.getenv("LLM_PROVIDER", "openai-compat|local")
 
 
 # ── Checks de infraestructura ─────────────────────────────────────────────────
@@ -77,18 +77,16 @@ def _mask_key(key: str) -> str:
     return "***"
 
 
-def check_groq_key() -> tuple[bool, str]:
-    key = os.getenv("GROQ_API_KEY", "").strip()
+def check_remote_provider() -> tuple[bool, str]:
+    key      = os.getenv("PROVIDER_LLM_API_KEY", "").strip()
+    base_url = os.getenv("PROVIDER_LLM_BASE_URL", "").strip()
+    if not key and not base_url:
+        return False, "PROVIDER_LLM_API_KEY y PROVIDER_LLM_BASE_URL no definidas"
     if not key:
-        return False, "GROQ_API_KEY no definida"
-    return True, f"configurada ({_mask_key(key)})"
-
-
-def check_deepseek_key() -> tuple[bool, str]:
-    key = os.getenv("DEEPSEEK_API_KEY", "").strip()
-    if not key:
-        return False, "DEEPSEEK_API_KEY no definida"
-    return True, f"configurada ({_mask_key(key)})"
+        return False, "PROVIDER_LLM_API_KEY no definida"
+    if not base_url:
+        return False, "PROVIDER_LLM_BASE_URL no definida"
+    return True, f"key={_mask_key(key)}  url={base_url}"
 
 
 # ── Tabla de resultados ───────────────────────────────────────────────────────
@@ -104,10 +102,8 @@ def main() -> None:
     llm_checks = []
     if "local" in active_providers:
         llm_checks.append(("llama-server", f"API en {LLAMA_URL}", check_llama_server, False))
-    if "groq" in active_providers:
-        llm_checks.append(("Groq API key", "Credencial presente", check_groq_key, False))
-    if "deepseek" in active_providers:
-        llm_checks.append(("DeepSeek API key", "Credencial presente", check_deepseek_key, False))
+    if "openai-compat" in active_providers:
+        llm_checks.append(("openai-compat", "API key + base URL presentes", check_remote_provider, False))
 
     table = Table(
         title=f"Health Check — edge-osint-lab  [LLM_PROVIDER={LLM_PROVIDER}]",
@@ -132,10 +128,10 @@ def main() -> None:
 
     # Resumen de cadena LLM activa
     configured = []
-    if "groq" in active_providers and os.getenv("GROQ_API_KEY", "").strip():
-        configured.append("groq")
-    if "deepseek" in active_providers and os.getenv("DEEPSEEK_API_KEY", "").strip():
-        configured.append("deepseek")
+    if "openai-compat" in active_providers \
+            and os.getenv("PROVIDER_LLM_API_KEY", "").strip() \
+            and os.getenv("PROVIDER_LLM_BASE_URL", "").strip():
+        configured.append("openai-compat")
     if "local" in active_providers:
         configured.append("local")
 

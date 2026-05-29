@@ -412,7 +412,14 @@ make clone-llama
 
 ### `llama_start.sh` — Iniciar llama-server en background
 
-Verifica que el binario y el modelo existan, y lanza `llama-server` con `nohup` si el puerto no está ya en uso. Los logs van a `/tmp/llama-server.log`.
+Resuelve el binario automáticamente, verifica que el modelo exista, y lanza `llama-server` con `nohup` si el puerto no está ya en uso. Los logs van a `/tmp/llama-server.log`.
+
+**Resolución del binario (por orden de prioridad):**
+
+1. `LLAMA_BIN` definida en entorno y el archivo existe → se usa directamente
+2. `llama-server` encontrado en `$PATH` vía `which` → se usa y se informa la ruta
+3. `$HOME/llama.cpp/build/bin/llama-server` existe → se usa el build local
+4. Ninguno encontrado → error con instrucciones de solución
 
 **Uso:**
 
@@ -422,18 +429,25 @@ bash scripts/shellscript/llama_start.sh
 
 **Variables de entorno:**
 
-| Variable | Default | Descripción |
+| Variable | Default / Descubrimiento | Descripción |
 |---|---|---|
-| `LLAMA_BIN` | `$HOME/llama.cpp/build/bin/llama-server` | Ruta al binario |
+| `LLAMA_BIN` | auto-descubierto (ver arriba) | Ruta explícita al binario (opcional) |
 | `LLAMA_PORT` | `8080` | Puerto de escucha |
 | `MODEL_PATH` | `$HOME/models/qwen2-0_5b-instruct-q4_k_m.gguf` | Ruta completa al modelo |
 | `LLAMA_CTX` | `2048` | Tamaño de contexto en tokens |
 | `LLAMA_THREADS` | `4` | Hilos de CPU |
 
-**Ejemplo con configuración personalizada:**
+**Ejemplos:**
 
 ```bash
-LLAMA_BIN=$HOME/llama.cpp/build/bin/llama-server \
+# Sin configuración — auto-descubre llama-server si está en PATH
+bash scripts/shellscript/llama_start.sh
+
+# Forzar binario específico
+LLAMA_BIN=/usr/local/bin/llama-server \
+    bash scripts/shellscript/llama_start.sh
+
+# Con modelo alternativo y más hilos
 MODEL_PATH=$HOME/models/tinyllama.gguf \
 LLAMA_PORT=9090 \
 LLAMA_THREADS=8 \

@@ -34,29 +34,24 @@ SCHEMA: dict[str, dict[str, Any]] = {
     "LLM_PROVIDER": {
         "required": True,
         "validate": lambda v: all(
-            p.strip() in {"groq", "deepseek", "local"} for p in str(v).split("|")
+            p.strip() in {"openai-compat", "local"} for p in str(v).split("|")
         ),
-        "hint": "separado por | con valores: groq, deepseek, local",
+        "hint": "separado por | con valores: openai-compat, local",
     },
-    "GROQ_API_KEY": {
+    "PROVIDER_LLM_BASE_URL": {
         "required": False,
-        "validate": lambda v: not v or str(v).startswith("gsk_"),
-        "hint": "debe empezar con 'gsk_' o estar vacío",
+        "validate": lambda v: not v or str(v).startswith("http"),
+        "hint": "URL base del API (ej: https://api.groq.com/openai/v1)",
     },
-    "GROQ_MODEL": {
-        "required": False,
-        "validate": lambda v: True,
-        "hint": "e.g. llama-3.1-8b-instant",
-    },
-    "DEEPSEEK_API_KEY": {
-        "required": False,
-        "validate": lambda v: not v or str(v).startswith("sk-"),
-        "hint": "debe empezar con 'sk-' o estar vacío",
-    },
-    "DEEPSEEK_MODEL": {
+    "PROVIDER_LLM_API_KEY": {
         "required": False,
         "validate": lambda v: True,
-        "hint": "e.g. deepseek-chat o deepseek-reasoner",
+        "hint": "API key del proveedor remoto",
+    },
+    "PROVIDER_LLM_MODEL": {
+        "required": False,
+        "validate": lambda v: True,
+        "hint": "nombre del modelo (ej: llama-3.1-8b-instant, deepseek-chat)",
     },
     "LLAMA_SERVER_URL": {
         "required": False,

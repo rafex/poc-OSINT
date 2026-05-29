@@ -1,9 +1,18 @@
 """LLM client con cadena de proveedores configurable.
 
-Orden de prioridad definido por LLM_PROVIDER (pipe-separated):
-  LLM_PROVIDER=groq|deepseek|local   ← default
-  LLM_PROVIDER=groq|local
-  LLM_PROVIDER=local
+Dos proveedores disponibles:
+
+  openai-compat  — cualquier API compatible con el SDK de OpenAI
+                   (Groq, DeepSeek, OpenRouter, Together AI, Ollama, etc.)
+                   Requiere: PROVIDER_LLM_BASE_URL + PROVIDER_LLM_API_KEY
+
+  local          — llama-server corriendo localmente (llama.cpp)
+                   No requiere API key. URL configurada por LLAMA_SERVER_URL.
+
+Orden de prioridad:
+  LLM_PROVIDER=openai-compat|local   ← default
+  LLM_PROVIDER=local                 ← solo local, sin APIs externas
+  LLM_PROVIDER=openai-compat         ← solo remoto, sin fallback
 
 Cada proveedor se intenta en orden. Los fallos recuperables avanzan
 al siguiente; los fallos de cliente (4xx no-auth) detienen la cadena.
@@ -26,7 +35,7 @@ _SYSTEM_PROMPT = (
     "Clearly mark inferences with 'Inference:' so they are distinguishable from facts."
 )
 
-_DEFAULT_CHAIN = "groq|deepseek|local"
+_DEFAULT_CHAIN = "openai-compat|local"
 
 # Límite de caracteres enviados al LLM.
 # Local (Pi): más ajustado. Remoto: más holgado — se comparte el mismo campo.
@@ -34,25 +43,17 @@ _MAX_OUTPUT_CHARS = 3000
 
 # ── Registro de proveedores ────────────────────────────────────────────────────
 _REGISTRY: dict[str, dict] = {
-    "groq": {
-        "base_url":      "https://api.groq.com/openai/v1",
-        "api_key_env":   "GROQ_API_KEY",
-        "model_env":     "GROQ_MODEL",
+    "openai-compat": {
+        "api_key_env":   "PROVIDER_LLM_API_KEY",   # requerida
+        "base_url_env":  "PROVIDER_LLM_BASE_URL",  # requerida (ej: https://api.groq.com/openai/v1)
+        "model_env":     "PROVIDER_LLM_MODEL",
         "default_model": "llama-3.1-8b-instant",
-        "max_tokens":    1024,
-        "timeout":       30.0,
-    },
-    "deepseek": {
-        "base_url":      "https://api.deepseek.com/v1",
-        "api_key_env":   "DEEPSEEK_API_KEY",
-        "model_env":     "DEEPSEEK_MODEL",
-        "default_model": "deepseek-chat",
         "max_tokens":    1024,
         "timeout":       60.0,
     },
     "local": {
-        "base_url":      None,  # construida en runtime desde LLAMA_SERVER_URL
         "api_key_env":   None,
+        "base_url_env":  None,  # construida en runtime desde LLAMA_SERVER_URL
         "model_env":     "LOCAL_MODEL_NAME",
         "default_model": "local",
         "max_tokens":    400,   # conservador para Pi 4B
@@ -90,27 +91,25 @@ def _resolve_chain() -> list[dict]:
 
         spec = _REGISTRY[name]
 
-        # Resolver API key
-        if spec["api_key_env"]:
-            api_key = os.getenv(spec["api_key_env"], "").strip()
-            if not api_key:
+        if name == "openai-compat":
+            api_key = os.getenv("PROVIDER_LLM_API_KEY", "").strip()
+            base_url = os.getenv("PROVIDER_LLM_BASE_URL", "").strip()
+            if not api_key or not base_url:
                 log.debug(
-                    "Proveedor '%s' omitido: %s no definida.",
-                    name, spec["api_key_env"],
+                    "Proveedor 'openai-compat' omitido: "
+                    "PROVIDER_LLM_API_KEY o PROVIDER_LLM_BASE_URL no definidas."
                 )
                 continue
-        else:
-            api_key = "local"  # llama-server no valida la key
+            model = os.getenv("PROVIDER_LLM_MODEL", spec["default_model"])
 
-        # Resolver base_url
-        if name == "local":
+        elif name == "local":
+            api_key = "local"
             server = os.getenv("LLAMA_SERVER_URL", "http://localhost:8080").rstrip("/")
             base_url = f"{server}/v1"
-        else:
-            base_url = spec["base_url"]
+            model = os.getenv("LOCAL_MODEL_NAME", spec["default_model"])
 
-        # Resolver modelo
-        model = os.getenv(spec["model_env"], spec["default_model"]) if spec["model_env"] else spec["default_model"]
+        else:
+            continue  # inalcanzable dado el check en _REGISTRY
 
         chain.append({
             "name":       name,
@@ -165,7 +164,7 @@ def interpret_osint(raw_output: str, original_query: str) -> LLMResponse:
 
     if not chain:
         log.error(
-            "Cadena vacía. Revisa LLM_PROVIDER y las variables de API key. "
+            "Cadena vacía. Revisa LLM_PROVIDER y las variables de configuración. "
             "Proveedores disponibles: %s",
             ", ".join(_REGISTRY),
         )

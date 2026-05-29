@@ -43,7 +43,7 @@ Abre un prompt donde puedes escribir la consulta en lenguaje natural:
 ```
 ╔══════════════════════════════════════════╗
 ║   OSINT-SLM PoC  │  edge-osint-lab       ║
-║   PHOMBER + [groq|deepseek|local] + Podman  ║
+║   PHOMBER + [openai-compat|local] + Podman ║
 ╚══════════════════════════════════════════╝
 
 Query: busca información sobre el número +52 55 1234 5678
@@ -66,7 +66,7 @@ $ just q "+52 55 1234 5678"
 
 ╔══════════════════════════════════════════╗
 ║   OSINT-SLM PoC  │  edge-osint-lab       ║
-║   PHOMBER + [groq|deepseek|local] + Podman  ║
+║   PHOMBER + [openai-compat|local] + Podman ║
 ╚══════════════════════════════════════════╝
 
 [*] Query: +52 55 1234 5678
@@ -82,7 +82,7 @@ $ just q "+52 55 1234 5678"
 
 [*] Sending to LLM for interpretation…
 
-─── LLM interpretation  [groq] ─────────────
+─── LLM interpretation  [openai-compat] ────
 El número pertenece a México y corresponde a una línea
 móvil operada por Telcel, con origen en la Ciudad de México.
 
@@ -91,28 +91,24 @@ GSM/LTE de Telcel en el área metropolitana.
 ─────────────────────────────────────────────
 ```
 
-El campo `[groq]` al final del encabezado indica qué proveedor respondió.
-Puede ser `[groq]`, `[deepseek]`, `[local]` o `[none]` si todos fallaron.
+El campo entre corchetes indica qué proveedor respondió: `[openai-compat]`, `[local]` o `[none]` si todos fallaron.
 
 ---
 
 ## Forzar un proveedor específico
 
 ```bash
-# Solo Groq
-LLM_PROVIDER=groq just q "+52 55 1234 5678"
-
-# Solo DeepSeek
-LLM_PROVIDER=deepseek just q "+52 55 1234 5678"
+# Solo proveedor remoto (openai-compat)
+LLM_PROVIDER=openai-compat just q "+52 55 1234 5678"
 
 # Solo modelo local (sin APIs externas)
 LLM_PROVIDER=local just q "+52 55 1234 5678"
 
-# DeepSeek con fallback local
-LLM_PROVIDER=deepseek|local just q "+52 55 1234 5678"
+# Remoto con fallback local (default)
+LLM_PROVIDER=openai-compat|local just q "+52 55 1234 5678"
 ```
 
-La variable de entorno en la línea de comando tiene prioridad sobre el `.env`.
+La variable en la línea de comando tiene prioridad sobre el `.env`.
 
 ---
 
@@ -132,17 +128,18 @@ Los logs van a `stderr`. Para verlos separados:
 LOG_LEVEL=DEBUG just q "+52 55 1234 5678" 2>/tmp/osint-debug.log
 cat /tmp/osint-debug.log
 
-# Logs y salida juntos (útil para debugging)
+# Logs y salida juntos
 LOG_LEVEL=DEBUG just q "+52 55 1234 5678" 2>&1
 ```
 
-Ejemplo con Groq caído:
+Ejemplo con proveedor remoto caído:
+
 ```
-12:34:56 [INFO    ] orchestrator.llm_client — Cadena: groq → deepseek → local
-12:34:56 [INFO    ] orchestrator.llm_client — Intentando: groq  modelo=llama-3.1-8b-instant
-12:34:57 [WARNING ] orchestrator.llm_client — 'groq': APIConnectionError. Continuando cadena.
-12:34:57 [INFO    ] orchestrator.llm_client — Intentando: deepseek  modelo=deepseek-chat
-12:34:59 [INFO    ] orchestrator.llm_client — 'deepseek' respondió correctamente.
+12:34:56 [INFO    ] orchestrator.llm_client — Cadena de proveedores: openai-compat → local
+12:34:56 [INFO    ] orchestrator.llm_client — Intentando proveedor: openai-compat  modelo=llama-3.1-8b-instant
+12:34:57 [WARNING ] orchestrator.llm_client — 'openai-compat': APIConnectionError. Continuando cadena.
+12:34:57 [INFO    ] orchestrator.llm_client — Intentando proveedor: local  modelo=qwen2-0.5b-instruct-q4_k_m
+12:34:59 [INFO    ] orchestrator.llm_client — 'local' respondió correctamente.
 ```
 
 ---
@@ -156,7 +153,7 @@ just osint check
 Ejecuta `make check-container` y `make check-health`:
 - Verifica que el contenedor PHOMBER esté activo.
 - Verifica que llama-server esté respondiendo (si `local` está en la cadena).
-- Muestra el estado de las API keys.
+- Muestra el estado de las variables del proveedor remoto.
 
 ---
 
@@ -181,27 +178,16 @@ osint  # modo interactivo
 Si estás modificando el código:
 
 ```bash
-# Instalar con dependencias de dev
 make install-dev
-
-# Formatear, lint y typecheck
-just dev fix
-
-# CI completo (format-check + lint + typecheck + test)
-just dev ci
-
-# Ver logs de llama-server en tiempo real
-just dev logs-llama
-
-# Abrir shell en el contenedor para probar PHOMBER directamente
-just dev shell
+just dev fix        # format → lint → typecheck
+just dev ci         # pipeline completo
+just dev logs-llama # logs de llama-server en tiempo real
+just dev shell      # shell en el contenedor PHOMBER
 ```
 
 ---
 
 ## Notas sobre el formato de números
-
-El parser acepta números en formato E.164 y formatos locales:
 
 | Entrada | Normalizado | Válido |
 |---|---|---|

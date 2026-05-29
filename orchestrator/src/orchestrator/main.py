@@ -20,7 +20,7 @@ def _setup_logging() -> None:
 
 
 def _banner() -> None:
-    provider_chain = os.getenv("LLM_PROVIDER", "groq|deepseek|local")
+    provider_chain = os.getenv("LLM_PROVIDER", "openai-compat|local")
     print("╔══════════════════════════════════════════╗")
     print("║   OSINT-SLM PoC  │  edge-osint-lab       ║")
     print(f"║   PHOMBER + [{provider_chain:<12}] + Podman  ║")

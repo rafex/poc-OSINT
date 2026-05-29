@@ -27,9 +27,10 @@ HOST (tu Mac)
 
 ---
 
-## Opción A — Con APIs remotas (Groq / DeepSeek)
+## Opción A — Con proveedor remoto (openai-compat)
 
 La forma más rápida de validar. No necesita modelo local.
+Configura `PROVIDER_LLM_BASE_URL`, `PROVIDER_LLM_API_KEY` y `PROVIDER_LLM_MODEL` en `.env`.
 
 ### Paso 1 — Construir la imagen de PHOMBER
 
@@ -64,17 +65,16 @@ Salida esperada:
 CONTAINER ID  IMAGE                    ...  STATUS
 phomber       localhost/phomber:latest  ...  Up 30 seconds
 
-Health Check — edge-osint-lab  [LLM_PROVIDER=groq|deepseek|local]
-┌──────────────────┬───────────────────────────┬───────┬──────────────────────┐
-│ Componente       │ Descripción               │ Estado│ Detalle              │
-├──────────────────┼───────────────────────────┼───────┼──────────────────────┤
-│ Podman container │ PHOMBER activo            │ ✓ OK  │ en ejecución         │
-│ PHOMBER exec     │ Python alcanzable         │ ✓ OK  │ Python 3.11.x        │
-│ Groq API key     │ Credencial presente       │ ✓ OK  │ configurada (gsk_... │
-│ DeepSeek API key │ Credencial presente       │ – aus.│ DEEPSEEK_API_KEY no  │
-└──────────────────┴───────────────────────────┴───────┴──────────────────────┘
+Health Check — edge-osint-lab  [LLM_PROVIDER=openai-compat|local]
+┌──────────────────┬───────────────────────────┬───────┬──────────────────────────────────────┐
+│ Componente       │ Descripción               │ Estado│ Detalle                              │
+├──────────────────┼───────────────────────────┼───────┼──────────────────────────────────────┤
+│ Podman container │ PHOMBER activo            │ ✓ OK  │ en ejecución                         │
+│ PHOMBER exec     │ Python alcanzable         │ ✓ OK  │ Python 3.11.x                        │
+│ openai-compat    │ API key + base URL pres.  │ ✓ OK  │ key=gsk_xx…1234  url=https://api...  │
+└──────────────────┴───────────────────────────┴───────┴──────────────────────────────────────┘
 
-Cadena LLM efectiva: groq → local
+Cadena LLM efectiva: openai-compat → local
 ```
 
 ### Paso 4 — Ejecutar una consulta

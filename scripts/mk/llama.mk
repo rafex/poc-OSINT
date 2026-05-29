@@ -19,7 +19,7 @@ build-llama: clone-llama
 
 ## start-llama-server  Inicia llama-server en background
 start-llama-server:
-	@LLAMA_BIN=$(LLAMA_BIN) LLAMA_PORT=$(LLAMA_PORT) MODEL_PATH=$(MODEL_PATH) \
+	@LLAMA_PORT=$(LLAMA_PORT) MODEL_PATH=$(MODEL_PATH) \
 		LLAMA_CTX=$(LLAMA_CTX) LLAMA_THREADS=$(LLAMA_THREADS) \
 		bash $(SCRIPTS_SH_DIR)/llama_start.sh
 

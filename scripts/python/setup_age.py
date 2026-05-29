@@ -34,14 +34,17 @@ _SECRETS_TEMPLATE = """\
 # Cifrado con:  SOPS + age
 # NUNCA commitear la versión descifrada de este archivo.
 
-LLM_PROVIDER: "groq|deepseek|local"
+LLM_PROVIDER: "openai-compat|local"
 
-GROQ_API_KEY: ""
-GROQ_MODEL: "llama-3.1-8b-instant"
+# Proveedor remoto compatible con OpenAI SDK (Groq, DeepSeek, OpenRouter, etc.)
+# Ejemplos de BASE_URL:
+#   Groq     → https://api.groq.com/openai/v1
+#   DeepSeek → https://api.deepseek.com/v1
+PROVIDER_LLM_BASE_URL: ""
+PROVIDER_LLM_API_KEY: ""
+PROVIDER_LLM_MODEL: "llama-3.1-8b-instant"
 
-DEEPSEEK_API_KEY: ""
-DEEPSEEK_MODEL: "deepseek-chat"
-
+# llama.cpp local (fallback sin internet)
 LLAMA_SERVER_URL: "http://localhost:8080"
 LOCAL_MODEL_NAME: "qwen2-0.5b-instruct-q4_k_m"
 
