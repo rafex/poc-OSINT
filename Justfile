@@ -55,3 +55,10 @@ ci:
 # Configura .env de forma interactiva (detecta hardware y modelos)
 wizard:
     just setup env-wizard
+
+# Proxy directo a PHOMBER en el contenedor (sin LLM, sin filtros)
+# Uso: just phomber                  → sesión interactiva
+#      just phomber -- -p +52551234  → consulta directa
+#      just phomber -- --help        → ayuda de PHOMBER
+phomber *args:
+    bash scripts/shellscript/phomber_proxy.sh {{args}}

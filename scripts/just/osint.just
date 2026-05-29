@@ -19,14 +19,16 @@ check:
     make check-container
     make check-health
 
-# Ejecuta PHOMBER directamente (sin interpretación del SLM)
-# Uso: just osint raw "-p +525512345678"
-raw args:
-    podman exec phomber phomber -s {{args}}
+# Proxy transparente a PHOMBER en el contenedor — cualquier comando, sin filtros
+# Uso: just osint phomber                  → sesión interactiva con menú de PHOMBER
+#      just osint phomber -- -p +52551234  → consulta directa
+#      just osint phomber -- --help        → ayuda de PHOMBER
+#      just osint phomber -- -v            → versión
+phomber *args:
+    bash scripts/shellscript/phomber_proxy.sh {{args}}
 
-# Debug interactivo de PHOMBER: muestra stdout/stderr/exit code sin LLM
-# Uso: just osint debug               → modo interactivo (bucle)
-#      just osint debug "+52 55 ..."  → número directo
-#      just osint debug -- --help     → ayuda de PHOMBER
+# Debug con salida formateada (stdout/stderr/exit code separados, sin LLM)
+# Uso: just osint debug               → interactivo
+#      just osint debug -- -p +52...  → comando con rich output
 debug *args:
     uv run --script scripts/python/phomber_debug.py {{args}}

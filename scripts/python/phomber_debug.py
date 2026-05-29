@@ -6,244 +6,135 @@
 # ]
 # ///
 """
-Herramienta de debug para PHOMBER — interactúa directamente con el contenedor
-sin pasar por el LLM. Útil para ver la salida raw, ajustar flags y diagnosticar.
+Wrapper con salida formateada para PHOMBER.
+
+Ejecuta cualquier comando de PHOMBER en el contenedor y muestra stdout,
+stderr y metadatos claramente separados. Útil para revisar salidas raw
+y ajustar cómo las procesa el orquestador.
+
+Para sesión interactiva completa usa: just phomber  (sin este wrapper)
 
 Uso:
-    uv run --script scripts/python/phomber_debug.py                     # modo interactivo
-    uv run --script scripts/python/phomber_debug.py "+52 55 1234 5678"  # un número
-    uv run --script scripts/python/phomber_debug.py --help
-
-    just osint debug
-    just osint debug "+52 55 1234 5678"
+    just osint debug                         # interactivo
+    just osint debug -- -p +52551234567      # consulta directa
+    just osint debug -- --help               # ayuda de PHOMBER
+    just osint debug -- -v                   # versión
 """
 
-import argparse
 import os
 import subprocess
 import sys
 import time
 
-from rich import box
 from rich.console import Console
 from rich.panel import Panel
 from rich.rule import Rule
 from rich.table import Table
-from rich.text import Text
+from rich import box
 
 console = Console()
-
-CONTAINER   = os.getenv("CONTAINER_NAME", "phomber")
-DEFAULT_FLAGS: list[str] = ["-s"]   # -s suprime el banner de PHOMBER
+CONTAINER = os.getenv("CONTAINER_NAME", "phomber")
 
 
-# ── Ejecución ─────────────────────────────────────────────────────────────────
-
-def _run(args: list[str], *, silent: bool, timeout: int) -> tuple[str, str, int, float]:
-    """Ejecuta PHOMBER en el contenedor y devuelve (stdout, stderr, returncode, elapsed)."""
-    flags = DEFAULT_FLAGS if silent else []
-    cmd = ["podman", "exec", CONTAINER, "phomber"] + flags + args
-
-    console.print(f"[dim]$ {' '.join(cmd)}[/]")
-
-    start = time.monotonic()
+def _container_running() -> bool:
     try:
-        proc = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            stdin=subprocess.DEVNULL,
-        )
-        elapsed = time.monotonic() - start
-        return proc.stdout, proc.stderr, proc.returncode, elapsed
-
-    except subprocess.TimeoutExpired:
-        elapsed = time.monotonic() - start
-        return "", f"Timeout después de {timeout}s", -1, elapsed
-
-    except FileNotFoundError:
-        return "", "'podman' no encontrado en PATH", -2, 0.0
-
-
-def _check_container() -> bool:
-    """Devuelve True si el contenedor está corriendo."""
-    try:
-        result = subprocess.run(
+        out = subprocess.run(
             ["podman", "ps", "--filter", f"name={CONTAINER}",
              "--filter", "status=running", "--format", "{{.Names}}"],
             capture_output=True, text=True, timeout=5, stdin=subprocess.DEVNULL,
-        )
-        return CONTAINER in result.stdout
+        ).stdout
+        return CONTAINER in out
     except Exception:
         return False
 
 
-# ── Renderizado ───────────────────────────────────────────────────────────────
+def _run(args: list[str]) -> tuple[str, str, int, float]:
+    cmd = ["podman", "exec", CONTAINER, "phomber"] + args
+    console.print(f"  [dim]$ {' '.join(cmd)}[/]\n")
+    t0 = time.monotonic()
+    try:
+        p = subprocess.run(
+            cmd, capture_output=True, text=True,
+            timeout=60, stdin=subprocess.DEVNULL,
+        )
+        return p.stdout, p.stderr, p.returncode, time.monotonic() - t0
+    except subprocess.TimeoutExpired:
+        return "", "Timeout (60s)", -1, time.monotonic() - t0
+    except FileNotFoundError:
+        return "", "'podman' no encontrado", -2, 0.0
 
-def _render_output(stdout: str, stderr: str, returncode: int, elapsed: float) -> None:
-    # Stdout
+
+def _show(stdout: str, stderr: str, rc: int, elapsed: float) -> None:
     if stdout.strip():
         console.print(Rule("[bold green]stdout[/]", style="green"))
         console.print(stdout.rstrip())
     else:
-        console.print(Rule("[dim]stdout vacío[/]", style="dim"))
+        console.print(Rule("[dim]stdout — vacío[/]", style="dim"))
 
-    # Stderr
-    if stderr.strip():
-        # Filtrar la advertencia conocida de TTY (ya corregida en executor.py)
-        lines = [l for l in stderr.splitlines()
-                 if "Input is not a terminal" not in l]
-        if lines:
-            console.print(Rule("[bold yellow]stderr[/]", style="yellow"))
-            for line in lines:
-                console.print(f"[yellow]{line}[/]")
+    # Mostrar stderr filtrando solo el warning conocido de TTY (ya corregido)
+    filtered = [l for l in stderr.splitlines()
+                if "Input is not a terminal" not in l]
+    if filtered:
+        console.print(Rule("[bold yellow]stderr[/]", style="yellow"))
+        for line in filtered:
+            console.print(f"[yellow]{line}[/]")
 
-    # Metadata
-    rc_color = "green" if returncode == 0 else "red"
-    console.print()
     t = Table(box=box.SIMPLE, show_header=False, padding=(0, 1))
     t.add_column(style="dim")
     t.add_column()
-    t.add_row("exit code", f"[{rc_color}]{returncode}[/]")
-    t.add_row("tiempo",    f"{elapsed:.2f}s")
+    t.add_row("exit", f"[{'green' if rc == 0 else 'red'}]{rc}[/]")
+    t.add_row("tiempo", f"{elapsed:.2f}s")
+    console.print()
     console.print(t)
 
 
-def _run_and_show(raw_args: list[str], silent: bool, timeout: int) -> None:
-    stdout, stderr, rc, elapsed = _run(raw_args, silent=silent, timeout=timeout)
-    _render_output(stdout, stderr, rc, elapsed)
-
-
-# ── Modos ────────────────────────────────────────────────────────────────────
-
-def _single(target: str, silent: bool, timeout: int) -> None:
-    """Ejecuta una consulta de número de teléfono."""
-    phone = target.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
-    if not phone.startswith("+") and not phone.startswith("00"):
-        console.print("[yellow]Aviso:[/] el número no tiene prefijo de país (+XX). Puede que PHOMBER no retorne datos.")
-
-    console.print()
-    console.print(Panel.fit(
-        f"[bold cyan]PHOMBER raw[/]  →  [white]{target}[/]  [dim](normalizado: {phone})[/]",
-        border_style="cyan",
-    ))
-    _run_and_show(["-p", phone], silent=silent, timeout=timeout)
-
-
-def _exec_args(raw_args: list[str], silent: bool, timeout: int) -> None:
-    """Ejecuta PHOMBER con los args exactos proporcionados."""
-    console.print()
-    console.print(Panel.fit(
-        f"[bold cyan]PHOMBER raw[/]  →  [white]{' '.join(raw_args)}[/]",
-        border_style="cyan",
-    ))
-    _run_and_show(raw_args, silent=silent, timeout=timeout)
-
-
-def _interactive(silent: bool, timeout: int) -> None:
-    """Modo interactivo: solicita números en bucle."""
+def _interactive() -> None:
     console.print(Panel(
-        "[bold cyan]PHOMBER Debug — modo interactivo[/]\n\n"
-        "[dim]Escribe un número de teléfono (con prefijo de país: +52 55 1234 5678)\n"
-        "o un comando PHOMBER completo (ej: -p +525512345678)\n"
-        "Escribe [bold]exit[/bold] o presiona Ctrl+C para salir.[/]",
-        border_style="cyan",
-        expand=False,
+        "[bold cyan]PHOMBER debug — modo interactivo[/]\n\n"
+        "[dim]Escribe argumentos de phomber tal cual los usarías en la CLI.\n"
+        "Ejemplos:  -p +525512345678   --help   -v   -s -p +525512345678\n"
+        "Escribe [bold]exit[/] o Ctrl+C para salir.[/]",
+        border_style="cyan", expand=False,
     ))
 
-    # Estado del contenedor
-    if _check_container():
-        console.print(f"[green]✓[/] Contenedor [cyan]{CONTAINER}[/] activo\n")
-    else:
-        console.print(f"[red]✗[/] Contenedor [cyan]{CONTAINER}[/] no está corriendo.")
-        console.print("  Ejecuta [cyan]just up[/] primero.\n")
+    if not _container_running():
+        console.print(f"[red]✗[/] Contenedor [cyan]{CONTAINER}[/] no está corriendo — ejecuta [cyan]just up[/]")
         return
 
+    console.print(f"[green]✓[/] Contenedor [cyan]{CONTAINER}[/] activo\n")
+
+    import shlex
     while True:
         try:
-            raw = console.input("[bold cyan]phomber>[/] ").strip()
+            line = console.input("[bold cyan]phomber>[/] ").strip()
         except (EOFError, KeyboardInterrupt):
             console.print("\n[dim]Saliendo.[/]")
             break
 
-        if not raw or raw.lower() in ("exit", "quit", "q", "salir"):
+        if not line or line.lower() in ("exit", "quit", "q", "salir"):
             break
 
-        # Determinar si es un número o args directos
-        if raw.startswith("-"):
-            # Flags directas: -p +52... o --help
-            parts = raw.split()
-            _exec_args(parts, silent=silent, timeout=timeout)
-        else:
-            # Tratar como número de teléfono
-            _single(raw, silent=silent, timeout=timeout)
-
+        args = shlex.split(line)
+        stdout, stderr, rc, elapsed = _run(args)
+        _show(stdout, stderr, rc, elapsed)
         console.print()
 
 
-# ── CLI ───────────────────────────────────────────────────────────────────────
-
-def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Debug directo de PHOMBER sin LLM.",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Ejemplos:
-  # Modo interactivo
-  just osint debug
-
-  # Número directo
-  just osint debug "+52 55 1234 5678"
-
-  # Flags explícitas de PHOMBER
-  just osint debug -- -p +525512345678
-
-  # Ver ayuda de PHOMBER
-  uv run --script scripts/python/phomber_debug.py -- --help
-
-  # Sin flag -s (muestra el banner de PHOMBER)
-  uv run --script scripts/python/phomber_debug.py --no-silent "+52 55 1234 5678"
-        """,
-    )
-    parser.add_argument(
-        "target",
-        nargs="*",
-        help="Número de teléfono o args de PHOMBER (tras --)",
-    )
-    parser.add_argument(
-        "--container", default=CONTAINER,
-        help=f"Nombre del contenedor (default: {CONTAINER})",
-    )
-    parser.add_argument(
-        "--no-silent", action="store_true",
-        help="No pasar -s a PHOMBER (muestra banner completo)",
-    )
-    parser.add_argument(
-        "--timeout", type=int, default=30,
-        help="Timeout en segundos (default: 30)",
-    )
-    return parser.parse_args()
-
-
 def main() -> None:
-    args = _parse_args()
+    # Argumentos tras -- se pasan directo a phomber
+    args = sys.argv[1:]
 
-    # Override container si se especificó
-    global CONTAINER
-    CONTAINER = args.container
-
-    silent = not args.no_silent
-
-    if args.target:
-        joined = " ".join(args.target)
-        # Si empieza con -, son flags directas de PHOMBER
-        if joined.strip().startswith("-"):
-            _exec_args(args.target, silent=silent, timeout=args.timeout)
-        else:
-            _single(joined, silent=silent, timeout=args.timeout)
+    if args:
+        stdout, stderr, rc, elapsed = _run(args)
+        console.print(Panel.fit(
+            f"[bold cyan]PHOMBER[/]  [dim]phomber {' '.join(args)}[/]",
+            border_style="cyan",
+        ))
+        console.print()
+        _show(stdout, stderr, rc, elapsed)
+        sys.exit(rc)
     else:
-        _interactive(silent=silent, timeout=args.timeout)
+        _interactive()
 
 
 if __name__ == "__main__":
