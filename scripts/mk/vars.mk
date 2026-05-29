@@ -14,6 +14,21 @@ SHERLOCK_IMAGE         := localhost/sherlock:latest
 SHERLOCK_CONTAINER     := sherlock
 SHERLOCK_CONTAINERFILE := container/Containerfile.sherlock
 
+# GitFive — OSINT sobre usuarios y organizaciones de GitHub
+GITFIVE_IMAGE         := localhost/gitfive:latest
+GITFIVE_CONTAINER     := gitfive
+GITFIVE_CONTAINERFILE := container/Containerfile.gitfive
+
+# NumSpy — detalles de números de teléfono
+NUMSPY_IMAGE         := localhost/numspy:latest
+NUMSPY_CONTAINER     := numspy
+NUMSPY_CONTAINERFILE := container/Containerfile.numspy
+
+# WhatsMyName — username checker en 600+ sitios
+WHATSMYNAME_IMAGE         := localhost/whatsmyname:latest
+WHATSMYNAME_CONTAINER     := whatsmyname
+WHATSMYNAME_CONTAINERFILE := container/Containerfile.whatsmyname
+
 # Alias heredado (apunta a PHOMBER por compatibilidad con checks.mk)
 CONTAINER_NAME := $(PHOMBER_CONTAINER)
 IMAGE_NAME     := $(PHOMBER_IMAGE)

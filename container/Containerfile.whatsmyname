@@ -1,0 +1,27 @@
+# ── Stage 1: build ────────────────────────────────────────────────────────────
+FROM python:3.11-alpine AS builder
+
+RUN apk add --no-cache git ca-certificates gcc musl-dev
+
+# Clona el repositorio para obtener wmn-data.json (datos actualizados en build time)
+RUN git clone --depth 1 https://github.com/WebBreacher/WhatsMyName /src/whatsmyname
+
+RUN pip install --no-cache-dir --prefix=/install requests
+
+# ── Stage 2: runtime ──────────────────────────────────────────────────────────
+FROM python:3.11-alpine
+
+RUN apk add --no-cache ca-certificates
+
+# Dependencias
+COPY --from=builder /install /usr/local
+
+# Datos: el JSON con los 600+ sitios es lo único que se necesita del repo
+COPY --from=builder /src/whatsmyname/wmn-data.json /opt/whatsmyname/wmn-data.json
+
+# CLI checker
+COPY container/whatsmyname_cli.py /usr/local/bin/whatsmyname
+RUN chmod +x /usr/local/bin/whatsmyname
+
+# La imagen es read-only; todo output va a stdout
+CMD ["sleep", "infinity"]

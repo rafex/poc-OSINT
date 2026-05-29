@@ -69,3 +69,25 @@ phomber *args:
 #      just sherlock -- --help              → ayuda de Sherlock
 sherlock *args:
     bash scripts/shellscript/sherlock_proxy.sh {{args}}
+
+# Proxy directo a GitFive en el contenedor — OSINT de GitHub
+# Primera vez: just gitfive init  (configura el token de GitHub)
+# Uso: just gitfive init                  → configurar token (interactivo)
+#      just gitfive user <username>        → investigar usuario GitHub
+#      just gitfive email <email>          → investigar por email
+#      just gitfive -- --help              → ayuda de GitFive
+gitfive *args:
+    bash scripts/shellscript/gitfive_proxy.sh {{args}}
+
+# Proxy directo a NumSpy — detalles de números de teléfono
+# Uso: just numspy +525512345678     → consultar número
+#      just numspy -- --version      → versión instalada
+numspy *args:
+    bash scripts/shellscript/numspy_proxy.sh {{args}}
+
+# Proxy directo a WhatsMyName — username checker en 600+ sitios
+# Uso: just whatsmyname usuario             → buscar username
+#      just whatsmyname usuario --all       → todos los sitios
+#      just whatsmyname -- --list-categories
+whatsmyname *args:
+    bash scripts/shellscript/whatsmyname_proxy.sh {{args}}

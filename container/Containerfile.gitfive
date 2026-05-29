@@ -1,0 +1,31 @@
+# ── Stage 1: source ───────────────────────────────────────────────────────────
+# Clona GitFive. Git no llega a la imagen final.
+FROM python:3.11-slim-bookworm AS source
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 https://github.com/mxrch/GitFive /src/gitfive
+
+# ── Stage 2: runtime ──────────────────────────────────────────────────────────
+FROM python:3.11-slim-bookworm
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=source /src/gitfive /opt/gitfive
+
+WORKDIR /opt/gitfive
+
+RUN pip install --no-cache-dir .
+
+# El directorio de configuración (~/.gitfive/) se monta desde el host
+# para que el token persista entre reinicios del contenedor.
+# Primera vez: podman exec -it gitfive gitfive init
+VOLUME ["/root/.gitfive"]
+
+# Mantiene el contenedor vivo; gitfive se invoca bajo demanda via `podman exec`.
+CMD ["sleep", "infinity"]

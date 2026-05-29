@@ -23,8 +23,9 @@ if ! podman ps \
 fi
 
 if [ $# -eq 0 ]; then
-    # Sesión completamente interactiva: TTY + stdin
-    exec podman exec -it "${CONTAINER}" phomber
+    # -w /tmp: PHOMBER escribe .ph0mber_history en el cwd;
+    # /tmp es tmpfs escribible aunque el contenedor sea read-only.
+    exec podman exec -it -w /tmp "${CONTAINER}" phomber
 else
     # Comando directo: pasa todos los args sin modificar
     exec podman exec "${CONTAINER}" phomber "$@"

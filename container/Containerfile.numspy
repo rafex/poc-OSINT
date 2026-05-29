@@ -1,0 +1,26 @@
+# ── Stage 1: build ────────────────────────────────────────────────────────────
+# Instala dependencias con herramientas de compilación que NO llegan a la imagen final
+FROM python:3.11-alpine AS builder
+
+RUN apk add --no-cache gcc musl-dev
+
+RUN pip install --no-cache-dir --prefix=/install \
+        numspy \
+        beautifulsoup4 \
+        huepy \
+        requests
+
+# ── Stage 2: runtime ──────────────────────────────────────────────────────────
+FROM python:3.11-alpine
+
+RUN apk add --no-cache ca-certificates
+
+# Dependencias instaladas (sin gcc ni musl-dev en runtime)
+COPY --from=builder /install /usr/local
+
+# CLI wrapper
+COPY container/numspy_cli.py /usr/local/bin/numspy
+RUN chmod +x /usr/local/bin/numspy
+
+# Mantiene el contenedor vivo; numspy se invoca bajo demanda via `podman exec`
+CMD ["sleep", "infinity"]

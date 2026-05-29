@@ -59,6 +59,69 @@ services:
       retries: 3
       start_period: 15s
 
+  # ── GitFive ───────────────────────────────────────────────────────────────
+  gitfive:
+    build:
+      context: ..
+      dockerfile: container/Containerfile.gitfive
+    image: localhost/gitfive:latest
+    container_name: gitfive
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: ${GITFIVE_CONFIG_DIR:-/root/.gitfive}
+        target: /root/.gitfive
+        bind:
+          create_host_path: true
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "gitfive", "--version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── NumSpy ────────────────────────────────────────────────────────────────
+  numspy:
+    build:
+      context: ..
+      dockerfile: container/Containerfile.numspy
+    image: localhost/numspy:latest
+    container_name: numspy
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import numspy"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ── WhatsMyName ───────────────────────────────────────────────────────────
+  whatsmyname:
+    build:
+      context: ..
+      dockerfile: container/Containerfile.whatsmyname
+    image: localhost/whatsmyname:latest
+    container_name: whatsmyname
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "whatsmyname", "--version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
   # ── llama-server (perfil: local-llm) ────────────────────────────────────
   llama-server:
     profiles: ["local-llm"]

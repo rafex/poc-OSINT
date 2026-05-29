@@ -1,5 +1,6 @@
 # COMPOSE_CMD y COMPOSE_FILE vienen de mk/vars.mk
-.PHONY: compose-build-phomber compose-build-sherlock compose-build-all compose-build-llama \
+.PHONY: compose-build-phomber compose-build-sherlock compose-build-gitfive \
+        compose-build-numspy compose-build-whatsmyname compose-build-all compose-build-llama \
         compose-up compose-up-local \
         compose-down compose-stop \
         compose-ps compose-logs \
@@ -15,8 +16,23 @@ compose-build-sherlock:
 	@printf "$(CYAN)[compose]$(RESET) Construyendo imagen sherlock…\n"
 	$(COMPOSE_CMD) -f $(COMPOSE_FILE) build sherlock
 
-## compose-build-all      Construye PHOMBER + Sherlock para compose
-compose-build-all: compose-build-phomber compose-build-sherlock
+## compose-build-gitfive  Construye la imagen de GitFive para compose
+compose-build-gitfive:
+	@printf "$(CYAN)[compose]$(RESET) Construyendo imagen gitfive…\n"
+	$(COMPOSE_CMD) -f $(COMPOSE_FILE) build gitfive
+
+## compose-build-numspy      Construye la imagen de NumSpy para compose
+compose-build-numspy:
+	@printf "$(CYAN)[compose]$(RESET) Construyendo imagen numspy…\n"
+	$(COMPOSE_CMD) -f $(COMPOSE_FILE) build numspy
+
+## compose-build-whatsmyname Construye la imagen de WhatsMyName para compose
+compose-build-whatsmyname:
+	@printf "$(CYAN)[compose]$(RESET) Construyendo imagen whatsmyname…\n"
+	$(COMPOSE_CMD) -f $(COMPOSE_FILE) build whatsmyname
+
+## compose-build-all      Construye todas las imágenes OSINT para compose
+compose-build-all: compose-build-phomber compose-build-sherlock compose-build-gitfive compose-build-numspy compose-build-whatsmyname
 	@printf "$(GREEN)[compose]$(RESET) Imágenes OSINT listas.\n"
 
 ## compose-build-llama    Construye la imagen de llama-server (tarda varios minutos)
@@ -25,11 +41,11 @@ compose-build-llama:
 	@printf "$(YELLOW)[compose]$(RESET) Esto puede tardar 10–20 min en primera ejecución.\n"
 	$(COMPOSE_CMD) -f $(COMPOSE_FILE) --profile local-llm build llama-server
 
-## compose-up             Levanta PHOMBER + Sherlock en background (APIs remotas)
+## compose-up             Levanta todos los servicios OSINT en background
 compose-up:
 	@printf "$(CYAN)[compose]$(RESET) Iniciando stack OSINT…\n"
-	$(COMPOSE_CMD) -f $(COMPOSE_FILE) up --detach phomber sherlock
-	@printf "$(GREEN)[compose]$(RESET) phomber y sherlock activos.\n"
+	$(COMPOSE_CMD) -f $(COMPOSE_FILE) up --detach phomber sherlock gitfive numspy whatsmyname
+	@printf "$(GREEN)[compose]$(RESET) Stack OSINT activo.\n"
 
 ## compose-up-local       Levanta stack completo + llama-server local
 compose-up-local:
@@ -62,5 +78,8 @@ compose-clean: compose-down
 	@printf "$(YELLOW)[compose]$(RESET) Eliminando imágenes locales…\n"
 	$(PODMAN) rmi $(PHOMBER_IMAGE)          2>/dev/null || true
 	$(PODMAN) rmi $(SHERLOCK_IMAGE)         2>/dev/null || true
+	$(PODMAN) rmi $(GITFIVE_IMAGE)          2>/dev/null || true
+	$(PODMAN) rmi $(NUMSPY_IMAGE)           2>/dev/null || true
+	$(PODMAN) rmi $(WHATSMYNAME_IMAGE)      2>/dev/null || true
 	$(PODMAN) rmi localhost/llama-server:latest 2>/dev/null || true
 	@printf "$(GREEN)[compose]$(RESET) Imágenes eliminadas.\n"
