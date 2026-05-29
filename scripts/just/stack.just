@@ -7,7 +7,7 @@ set working-directory := "../.."
 # Si no lo están: just setup raspi
 
 # Inicia el stack completo: contenedor PHOMBER + llama-server
-start model=`echo ${MODEL_PATH:-$HOME/models/qwen2-0_5b-instruct-q4_k_m.gguf}`:
+start model=`echo ${MODEL_PATH:-${MODEL_DIR:-$HOME/models}/${MODEL_FILE:-qwen2-0_5b-instruct-q4_k_m.gguf}}`:
     @echo "=== Iniciando stack edge-osint-lab ==="
     make start-container
     make start-llama-server MODEL_PATH="{{model}}"
@@ -22,7 +22,7 @@ stop:
     @echo "=== Stack detenido ==="
 
 # Reinicia el stack completo
-restart model=`echo ${MODEL_PATH:-$HOME/models/qwen2-0_5b-instruct-q4_k_m.gguf}`:
+restart model=`echo ${MODEL_PATH:-${MODEL_DIR:-$HOME/models}/${MODEL_FILE:-qwen2-0_5b-instruct-q4_k_m.gguf}}`:
     just stack stop
     just stack start "{{model}}"
 

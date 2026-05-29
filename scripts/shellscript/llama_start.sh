@@ -2,7 +2,10 @@
 set -euo pipefail
 
 LLAMA_PORT="${LLAMA_PORT:-8080}"
-MODEL_PATH="${MODEL_PATH:-$HOME/models/qwen2-0_5b-instruct-q4_k_m.gguf}"
+# Resolve MODEL_PATH: explícito > MODEL_DIR/MODEL_FILE > default hardcodeado
+if [ -z "${MODEL_PATH:-}" ]; then
+    MODEL_PATH="${MODEL_DIR:-$HOME/models}/${MODEL_FILE:-qwen2-0_5b-instruct-q4_k_m.gguf}"
+fi
 LLAMA_CTX="${LLAMA_CTX:-2048}"
 LLAMA_THREADS="${LLAMA_THREADS:-4}"
 GREEN=$'\033[32m'; YELLOW=$'\033[33m'; CYAN=$'\033[36m'; RED=$'\033[31m'; RESET=$'\033[0m'

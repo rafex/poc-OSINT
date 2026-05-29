@@ -27,9 +27,10 @@ LLAMA_THREADS   := 4
 LLAMA_CTX       := 2048
 
 # ── Modelo ────────────────────────────────────────────────────────────────────
-MODEL_DIR       := $(HOME)/models
-MODEL_FILE      := qwen2-0_5b-instruct-q4_k_m.gguf
-MODEL_PATH      := $(MODEL_DIR)/$(MODEL_FILE)
+# ?= permite que las variables de entorno (cargadas por just desde .env) tengan prioridad
+MODEL_DIR  ?= $(HOME)/models
+MODEL_FILE ?= qwen2-0_5b-instruct-q4_k_m.gguf
+MODEL_PATH ?= $(MODEL_DIR)/$(MODEL_FILE)
 
 # ── Compose ───────────────────────────────────────────────────────────────────
 COMPOSE_CMD          := podman compose
