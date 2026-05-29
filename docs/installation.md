@@ -121,7 +121,7 @@ uv run python --version
 just setup env-init
 
 # Edita el archivo con tus claves de API
-# (mínimo: GROQ_API_KEY o DEEPSEEK_API_KEY para funcionar sin modelo local)
+# (mínimo: PROVIDER_LLM_BASE_URL + PROVIDER_LLM_API_KEY para funcionar sin modelo local)
 $EDITOR .env
 ```
 

@@ -97,7 +97,7 @@ just setup env-init
 nano .env    # o vim, emacs
 ```
 
-Rellena como mínimo `GROQ_API_KEY` o `DEEPSEEK_API_KEY`.
+Rellena como mínimo `PROVIDER_LLM_BASE_URL` + `PROVIDER_LLM_API_KEY` para usar un proveedor remoto, o deja `LLM_PROVIDER=local` para modo sin internet.
 Para uso completamente offline, puedes dejar las claves vacías y usar solo `LLM_PROVIDER=local`.
 
 Ver [configuration.md](configuration.md) para el detalle completo.

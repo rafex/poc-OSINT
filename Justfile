@@ -51,3 +51,7 @@ status:
 # Ejecuta CI completo de calidad de código
 ci:
     just dev ci
+
+# Configura .env de forma interactiva (detecta hardware y modelos)
+wizard:
+    just setup env-wizard

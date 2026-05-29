@@ -212,11 +212,11 @@ just compose logs-service llama-server
 # - La imagen aún está compilando (primera vez)
 ```
 
-### `GROQ_API_KEY` no cargada
+### Proveedor remoto no disponible
 
-Verifica que `.env` existe y tiene la key:
+Verifica que `.env` tiene las variables del proveedor:
 ```bash
-cat .env | grep GROQ
+cat .env | grep PROVIDER_LLM
 just setup check-api
 ```
 

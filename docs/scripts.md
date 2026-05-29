@@ -86,9 +86,9 @@ uv run --script scripts/python/health_check.py
 |---|---|---|
 | `LLAMA_SERVER_URL` | `http://127.0.0.1:8080` | URL del health endpoint de llama-server |
 | `CONTAINER_NAME` | `phomber` | Nombre del contenedor a verificar |
-| `LLM_PROVIDER` | `groq\|deepseek\|local` | Qué providers incluir en el check |
-| `GROQ_API_KEY` | — | Si está definida, se marca como configurada |
-| `DEEPSEEK_API_KEY` | — | Si está definida, se marca como configurada |
+| `LLM_PROVIDER` | `openai-compat\|local` | Qué providers incluir en el check |
+| `PROVIDER_LLM_API_KEY` | — | Si está definida, el proveedor remoto se marca como configurado |
+| `PROVIDER_LLM_BASE_URL` | — | Si está definida, el proveedor remoto se marca como configurado |
 
 **Ejemplo — solo verificar LLM local:**
 
@@ -547,7 +547,7 @@ just osint check
 
 ### `check_api_config.sh` — Mostrar configuración de API keys
 
-Muestra qué proveedor LLM está activo y si `GROQ_API_KEY` y `DEEPSEEK_API_KEY` están presentes en el entorno.
+Muestra qué proveedor LLM está activo y si `PROVIDER_LLM_API_KEY` y `PROVIDER_LLM_BASE_URL` están presentes en el entorno.
 
 **Uso:**
 
@@ -559,9 +559,9 @@ bash scripts/shellscript/check_api_config.sh
 
 | Variable | Descripción |
 |---|---|
-| `LLM_PROVIDER` | Cadena de proveedores activos (default: `groq\|deepseek\|local`) |
-| `GROQ_API_KEY` | Si está definida, se marca como configurada |
-| `DEEPSEEK_API_KEY` | Si está definida, se marca como configurada |
+| `LLM_PROVIDER` | Cadena de proveedores activos (default: `openai-compat\|local`) |
+| `PROVIDER_LLM_API_KEY` | Si está definida, el proveedor remoto se marca activo |
+| `PROVIDER_LLM_BASE_URL` | Si está definida, el proveedor remoto se marca activo |
 
 **Proxy en just/make:**
 ```bash

@@ -27,7 +27,11 @@ raspi model_path="$HOME/models":
     just setup download-model
     @echo "=== Setup completado. Ejecuta: just stack start ==="
 
-# Copia .env.example a .env si no existe aún
+# Wizard interactivo: detecta hardware y rutas, genera .env paso a paso
+env-wizard:
+    uv run --script scripts/python/setup_wizard.py
+
+# Copia .env.example a .env si no existe aún (alternativa no interactiva)
 env-init:
     bash scripts/shellscript/env_init.sh
 
