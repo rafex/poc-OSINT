@@ -14,8 +14,16 @@ set working-directory := ".."
 #   5. just compose down                # limpia al terminar
 
 # Construye la imagen de PHOMBER
-build:
-    make compose-build
+build-phomber:
+    make compose-build-phomber
+
+# Construye la imagen de Sherlock
+build-sherlock:
+    make compose-build-sherlock
+
+# Construye todas las imágenes OSINT (PHOMBER + Sherlock)
+build-all:
+    make compose-build-all
 
 # Construye la imagen de llama-server (compilación lenta, solo si necesitas LLM local)
 build-llama:
@@ -51,7 +59,7 @@ restart:
 status:
     make compose-ps
     @echo ""
-    uv run --script scripts/health_check.py
+    uv run --script scripts/python/health_check.py
 
 # Sigue los logs de todos los servicios
 logs:

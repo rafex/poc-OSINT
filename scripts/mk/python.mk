@@ -54,12 +54,12 @@ build-wheel:
 
 ## lint-scripts      Verifica estilo de los scripts PEP 723 (ruff)
 lint-scripts:
-	@printf "$(CYAN)[python]$(RESET) ruff check scripts/…\n"
-	$(UV_SCRIP) run ruff check .
+	@printf "$(CYAN)[python]$(RESET) ruff check $(SCRIPTS_PY_DIR)/…\n"
+	$(UV_SCRIP) run ruff check $(SCRIPTS_PY_DIR)/
 
 ## format-scripts    Formatea los scripts PEP 723 (ruff)
 format-scripts:
-	$(UV_SCRIP) run ruff format .
+	$(UV_SCRIP) run ruff format $(SCRIPTS_PY_DIR)/
 
 ## clean-python      Elimina cachés y artefactos de Python
 clean-python:

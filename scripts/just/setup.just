@@ -15,7 +15,7 @@ install-dev:
 # Uso: just setup download-model
 # Uso con modelo custom: just setup download-model "Qwen/Qwen2-0.5B-Instruct-GGUF" "qwen2-0_5b-instruct-q4_k_m.gguf"
 download-model repo="Qwen/Qwen2-0.5B-Instruct-GGUF" file="qwen2-0_5b-instruct-q4_k_m.gguf":
-    uv run --script scripts/download_model.py --repo "{{repo}}" --file "{{file}}"
+    uv run --script scripts/python/download_model.py --repo "{{repo}}" --file "{{file}}"
 
 # Configuración completa de Raspberry Pi 4B desde cero
 # Ejecuta: instala deps, construye imagen, compila llama.cpp, descarga modelo

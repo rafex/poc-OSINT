@@ -37,7 +37,12 @@ COMPOSE_FILE         := container/compose.yaml
 
 # ── Python / proyectos ────────────────────────────────────────────────────────
 ORCHESTRATOR_DIR := orchestrator
+# raíz del proyecto scripts (pyproject.toml)
 SCRIPTS_DIR      := scripts
+# scripts PEP 723
+SCRIPTS_PY_DIR   := scripts/python
+# scripts shell
+SCRIPTS_SH_DIR   := scripts/shellscript
 # Ruta del paquete dentro de orchestrator/ (src layout)
 PYTHON_PKG       := src/orchestrator
 

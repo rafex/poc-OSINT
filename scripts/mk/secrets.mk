@@ -5,12 +5,12 @@ AGE_KEY_FILE := $(HOME)/.age/key.txt
 ## secrets-setup      Genera clave age y crea secrets/secrets.enc.yaml cifrado
 secrets-setup:
 	@printf "$(CYAN)[secrets]$(RESET) Configurando age + SOPS…\n"
-	$(UV) run --script scripts/setup_age.py
+	$(UV) run --script $(SCRIPTS_PY_DIR)/setup_age.py
 
 ## secrets-edit       Abre vim para editar secretos (decrypt→edit→validate→encrypt)
 secrets-edit:
 	@printf "$(CYAN)[secrets]$(RESET) Abriendo editor de secretos…\n"
-	SOPS_AGE_KEY_FILE=$(AGE_KEY_FILE) $(UV) run --script scripts/edit_secrets.py
+	SOPS_AGE_KEY_FILE=$(AGE_KEY_FILE) $(UV) run --script $(SCRIPTS_PY_DIR)/edit_secrets.py
 
 ## secrets-export     Exporta secretos descifrados a .env (no commitear)
 secrets-export:

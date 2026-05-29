@@ -40,7 +40,7 @@ status:
     @echo "=== Estado del stack ==="
     make container-status
     make llama-status
-    uv run --script scripts/health_check.py
+    uv run --script scripts/python/health_check.py
 
 # Sigue los logs del contenedor PHOMBER
 logs:

@@ -15,11 +15,11 @@ _age_key := env_var("HOME") + "/.age/key.txt"
 
 # Setup inicial: genera clave age en ~/.age/key.txt y crea secrets.enc.yaml
 setup:
-    uv run --script scripts/setup_age.py
+    uv run --script scripts/python/setup_age.py
 
 # Edita secretos con vim (decrypt → valida schema → re-cifra)
 edit:
-    SOPS_AGE_KEY_FILE="{{_age_key}}" uv run --script scripts/edit_secrets.py
+    SOPS_AGE_KEY_FILE="{{_age_key}}" uv run --script scripts/python/edit_secrets.py
 
 # Exporta secretos descifrados a .env (formato KEY=value)
 # .env está en .gitignore — NUNCA commitear
@@ -28,7 +28,7 @@ export:
     set -euo pipefail
     SOPS_AGE_KEY_FILE="$HOME/.age/key.txt" \
         sops --decrypt secrets/secrets.enc.yaml \
-        | python3 scripts/export_secrets.py \
+        | python3 scripts/python/export_secrets.py \
         > .env
     echo "Exportado → .env  (no commitear)"
 
