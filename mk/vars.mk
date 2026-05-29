@@ -38,8 +38,8 @@ COMPOSE_FILE         := container/compose.yaml
 # ── Python / proyectos ────────────────────────────────────────────────────────
 ORCHESTRATOR_DIR := orchestrator
 SCRIPTS_DIR      := scripts
-# Nombre del paquete dentro de orchestrator/ (usado por lint/typecheck)
-PYTHON_PKG       := orchestrator
+# Ruta del paquete dentro de orchestrator/ (src layout)
+PYTHON_PKG       := src/orchestrator
 
 # ── Colores ANSI ──────────────────────────────────────────────────────────────
 BOLD   := \033[1m

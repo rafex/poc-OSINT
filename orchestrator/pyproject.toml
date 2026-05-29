@@ -16,8 +16,9 @@ dependencies = [
 osint = "orchestrator.main:main"
 
 [tool.hatch.build.targets.wheel]
-# El paquete Python vive en orchestrator/orchestrator/
-packages = ["orchestrator"]
+# src layout: ruta explícita porque el nombre del proyecto difiere del paquete.
+# Instala el directorio src/orchestrator/ como el paquete importable `orchestrator`.
+packages = ["src/orchestrator"]
 
 # ── Dependencias de desarrollo ────────────────────────────────────────────────
 [dependency-groups]
@@ -31,6 +32,7 @@ dev = [
 [tool.ruff]
 target-version = "py311"
 line-length = 100
+src = ["src"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
@@ -41,6 +43,7 @@ ignore = ["E501"]
 python_version = "3.11"
 strict = true
 ignore_missing_imports = true
+mypy_path = "src"
 
 # ── Pytest ────────────────────────────────────────────────────────────────────
 [tool.pytest.ini_options]
