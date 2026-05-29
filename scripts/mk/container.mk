@@ -2,15 +2,17 @@
     build-image-phomber    rebuild-image-phomber    clean-image-phomber \
     build-image-sherlock   rebuild-image-sherlock   clean-image-sherlock \
     build-image-gitfive    rebuild-image-gitfive    clean-image-gitfive \
-    build-image-numspy     rebuild-image-numspy     clean-image-numspy \
-    build-image-whatsmyname rebuild-image-whatsmyname clean-image-whatsmyname \
+    build-image-numspy        rebuild-image-numspy        clean-image-numspy \
+    build-image-whatsmyname   rebuild-image-whatsmyname   clean-image-whatsmyname \
+    build-image-phoneinfoga   rebuild-image-phoneinfoga   clean-image-phoneinfoga \
     build-all-images \
     start-container      stop-container      rm-container      restart-container \
     start-container-phomber    stop-container-phomber \
     start-container-sherlock   stop-container-sherlock \
     start-container-gitfive    stop-container-gitfive \
-    start-container-numspy     stop-container-numspy \
-    start-container-whatsmyname stop-container-whatsmyname \
+    start-container-numspy       stop-container-numspy \
+    start-container-whatsmyname  stop-container-whatsmyname \
+    start-container-phoneinfoga  stop-container-phoneinfoga \
     container-logs container-shell container-status
 
 # ── PHOMBER ───────────────────────────────────────────────────────────────────
@@ -191,8 +193,48 @@ stop-container-whatsmyname:
 	@printf "$(YELLOW)[container]$(RESET) Deteniendo $(WHATSMYNAME_CONTAINER)…\n"
 	$(PODMAN) stop $(WHATSMYNAME_CONTAINER) 2>/dev/null || true
 
+## build-image-phoneinfoga  Construye la imagen de PhoneInfoga (binario Go estático)
+build-image-phoneinfoga:
+	@printf "$(CYAN)[container]$(RESET) Construyendo imagen $(PHONEINFOGA_IMAGE)…\n"
+	$(PODMAN) build \
+		--tag $(PHONEINFOGA_IMAGE) \
+		--file $(PHONEINFOGA_CONTAINERFILE) \
+		--label "org.opencontainers.image.source=https://github.com/rafex/poc-OSINT" \
+		.
+	@printf "$(GREEN)[container]$(RESET) Imagen lista: $(PHONEINFOGA_IMAGE)\n"
+
+## rebuild-image-phoneinfoga Reconstruye PhoneInfoga sin caché (descarga binario fresco)
+rebuild-image-phoneinfoga:
+	@printf "$(YELLOW)[container]$(RESET) Reconstruyendo $(PHONEINFOGA_IMAGE) sin caché…\n"
+	$(PODMAN) build --no-cache --tag $(PHONEINFOGA_IMAGE) --file $(PHONEINFOGA_CONTAINERFILE) .
+
+## clean-image-phoneinfoga   Detiene contenedor y elimina imagen PhoneInfoga
+clean-image-phoneinfoga:
+	$(PODMAN) stop $(PHONEINFOGA_CONTAINER) 2>/dev/null || true
+	$(PODMAN) rm   $(PHONEINFOGA_CONTAINER) 2>/dev/null || true
+	$(PODMAN) rmi  $(PHONEINFOGA_IMAGE)     2>/dev/null || true
+	@printf "$(GREEN)[container]$(RESET) PhoneInfoga limpiado.\n"
+
+## start-container-phoneinfoga  Inicia el contenedor PhoneInfoga (proxy mode)
+start-container-phoneinfoga:
+	@if $(PODMAN) container exists $(PHONEINFOGA_CONTAINER) 2>/dev/null; then \
+		printf "$(YELLOW)[container]$(RESET) '$(PHONEINFOGA_CONTAINER)' ya existe.\n"; \
+	else \
+		printf "$(CYAN)[container]$(RESET) Iniciando $(PHONEINFOGA_CONTAINER)…\n"; \
+		$(PODMAN) run --detach --name $(PHONEINFOGA_CONTAINER) \
+			--network host \
+			--read-only --tmpfs /tmp \
+			--security-opt no-new-privileges \
+			$(PHONEINFOGA_IMAGE); \
+	fi
+
+## stop-container-phoneinfoga   Detiene el contenedor PhoneInfoga
+stop-container-phoneinfoga:
+	@printf "$(YELLOW)[container]$(RESET) Deteniendo $(PHONEINFOGA_CONTAINER)…\n"
+	$(PODMAN) stop $(PHONEINFOGA_CONTAINER) 2>/dev/null || true
+
 ## build-all-images       Construye todas las imágenes OSINT
-build-all-images: build-image-phomber build-image-sherlock build-image-gitfive build-image-numspy build-image-whatsmyname
+build-all-images: build-image-phomber build-image-sherlock build-image-gitfive build-image-numspy build-image-whatsmyname build-image-phoneinfoga
 	@printf "$(GREEN)[container]$(RESET) Todas las imágenes construidas.\n"
 
 # ── Lifecycle PHOMBER (default por compatibilidad) ────────────────────────────

@@ -91,3 +91,11 @@ numspy *args:
 #      just whatsmyname -- --list-categories
 whatsmyname *args:
     bash scripts/shellscript/whatsmyname_proxy.sh {{args}}
+
+# Proxy directo a PhoneInfoga — OSINT avanzado de números de teléfono (Go)
+# Uso: just phoneinfoga version                     → versión
+#      just phoneinfoga scan -n +525512345678        → escanear número
+#      just phoneinfoga scan -n +52... --output json → salida JSON
+#      just phoneinfoga serve                        → REST API + web UI en :5000
+phoneinfoga *args:
+    bash scripts/shellscript/phoneinfoga_proxy.sh {{args}}

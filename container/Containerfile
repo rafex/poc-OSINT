@@ -1,53 +1,48 @@
-# ── Stage 1: source ───────────────────────────────────────────────────────────
-# Clona el repositorio de PHOMBER. Este stage NO llega a la imagen final,
-# por lo que git y sus dependencias no aumentan el tamaño del runtime.
-FROM python:3.11-slim-bookworm AS source
+# ── Stage 1: source ────────────────────────────────────────────────────────────
+# Clona PHOMBER. Git NO llega a la imagen final.
+FROM alpine:3 AS source
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        git \
-        ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
+RUN apk add --no-cache git ca-certificates
 RUN git clone --depth 1 https://github.com/s41r4j/phomber /src/phomber
 
-# ── Stage 2: runtime ──────────────────────────────────────────────────────────
-FROM python:3.11-slim-bookworm
+# ── Stage 2: builder ───────────────────────────────────────────────────────────
+# Instala dependencias Python con herramientas de compilación que NO van al runtime.
+# psutil requiere gcc (extensión C); el resto son pure-Python o tienen wheels musl.
+FROM python:3.11-alpine AS builder
 
-# whois: requerido por python-whois para resolver registros WHOIS del sistema.
-# ca-certificates: necesario para las peticiones HTTPS de PHOMBER.
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        whois \
-        ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache gcc musl-dev linux-headers
 
-# Copia solo el código fuente; git y sus librerías se quedan en el stage anterior.
+COPY --from=source /src/phomber /src/phomber
+
+# Instala deps leyendo pyproject.toml (mismo mecanismo que antes, adaptado a Alpine).
+# Nota: Podman imagebuilder sin BuildKit no soporta heredocs en RUN.
+RUN python3 -c "\
+import tomllib, subprocess, sys; \
+f = open('/src/phomber/pyproject.toml', 'rb'); \
+deps = tomllib.load(f)['project']['dependencies']; \
+f.close(); \
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', \
+    '--no-cache-dir', '--prefix=/install'] + deps)"
+
+# ── Stage 3: runtime ───────────────────────────────────────────────────────────
+FROM python:3.11-alpine
+
+# whois: requerido por python-whois para consultas WHOIS del sistema.
+RUN apk add --no-cache ca-certificates whois
+
+# Dependencias Python del builder (sin gcc ni musl-dev en runtime)
+COPY --from=builder /install /usr/local
+
+# Código fuente de PHOMBER
 COPY --from=source /src/phomber /opt/phomber
 
 WORKDIR /opt/phomber
 
-# Lee las dependencias directamente del pyproject.toml usando tomllib (built-in
-# en Python 3.11+). Evita hardcodear la lista y no depende de requirements.txt
-# (eliminado en upstream) ni del entry-point roto del pyproject.toml.
-#
-# Nota: Podman imagebuilder (sin BuildKit) no soporta heredocs en RUN, por lo
-# que el código Python se pasa inline con `python3 -c`.
-RUN python3 -c "\
-import tomllib, subprocess, sys; \
-f = open('pyproject.toml', 'rb'); \
-meta = tomllib.load(f); \
-f.close(); \
-version = meta['project']['version']; \
-deps = meta['project']['dependencies']; \
-print(f'[phomber] v{version} — {len(deps)} deps desde pyproject.toml'); \
-[print(f'  + {d}') for d in deps]; \
-subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--no-cache-dir'] + deps) \
-"
-
-# Wrapper en PATH para que `podman exec phomber phomber <args>` funcione
-# desde cualquier directorio de trabajo sin depender de WORKDIR.
+# Wrapper en PATH para invocación transparente via `podman exec`
 RUN printf '#!/bin/sh\nexec python3 /opt/phomber/phomber.py "$@"\n' \
         > /usr/local/bin/phomber \
     && chmod +x /usr/local/bin/phomber
 
-# Mantiene el contenedor vivo; phomber se invoca bajo demanda via `podman exec`.
+ENV PYTHONUNBUFFERED=1
+
 CMD ["sleep", "infinity"]

@@ -1,0 +1,36 @@
+# ── Stage 1: descarga el binario precompilado ─────────────────────────────────
+# Sin compilación Go ni Node.js — solo curl + tar para obtener el binario oficial.
+FROM alpine:3 AS downloader
+
+RUN apk add --no-cache curl ca-certificates
+
+ARG VERSION=v2.11.0
+
+# Detecta la arquitectura del host y descarga el binario correspondiente
+RUN ARCH=$(uname -m) && \
+    case "${ARCH}" in \
+        x86_64)  GOARCH="x86_64" ;; \
+        aarch64) GOARCH="arm64"  ;; \
+        armv7l)  GOARCH="armv7"  ;; \
+        armv6l)  GOARCH="armv6"  ;; \
+        i386|i686) GOARCH="i386" ;; \
+        *) echo "Arquitectura no soportada: ${ARCH}" && exit 1 ;; \
+    esac && \
+    curl -fsSL \
+        "https://github.com/sundowndev/phoneinfoga/releases/download/${VERSION}/phoneinfoga_Linux_${GOARCH}.tar.gz" \
+        | tar -xzf - -C /tmp phoneinfoga && \
+    chmod +x /tmp/phoneinfoga
+
+# ── Stage 2: runtime mínimo ───────────────────────────────────────────────────
+FROM alpine:3
+
+RUN apk add --no-cache ca-certificates
+
+COPY --from=downloader /tmp/phoneinfoga /usr/local/bin/phoneinfoga
+
+# Puerto de la REST API / web UI (solo activo con: phoneinfoga serve)
+EXPOSE 5000
+
+# Proxy mode: el contenedor permanece vivo, phoneinfoga se invoca bajo demanda
+# Para levantar la REST API: podman exec phoneinfoga phoneinfoga serve
+CMD ["sleep", "infinity"]

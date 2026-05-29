@@ -29,6 +29,12 @@ WHATSMYNAME_IMAGE         := localhost/whatsmyname:latest
 WHATSMYNAME_CONTAINER     := whatsmyname
 WHATSMYNAME_CONTAINERFILE := container/Containerfile.whatsmyname
 
+# PhoneInfoga — OSINT avanzado de números de teléfono (Go, binario estático)
+PHONEINFOGA_IMAGE         := localhost/phoneinfoga:latest
+PHONEINFOGA_CONTAINER     := phoneinfoga
+PHONEINFOGA_CONTAINERFILE := container/Containerfile.phoneinfoga
+PHONEINFOGA_PORT          := 5000
+
 # Alias heredado (apunta a PHOMBER por compatibilidad con checks.mk)
 CONTAINER_NAME := $(PHOMBER_CONTAINER)
 IMAGE_NAME     := $(PHOMBER_IMAGE)

@@ -62,6 +62,15 @@ numspy *args:
 whatsmyname *args:
     bash scripts/shellscript/whatsmyname_proxy.sh {{args}}
 
+# Proxy transparente a PhoneInfoga en el contenedor — OSINT avanzado de números
+# Uso: just osint phoneinfoga version                      → versión instalada
+#      just osint phoneinfoga scan -n +525512345678        → escanear número
+#      just osint phoneinfoga scan -n +525512345678 --output json
+#      just osint phoneinfoga serve                        → REST API en :5000
+#      just osint phoneinfoga -- --help                    → ayuda completa
+phoneinfoga *args:
+    bash scripts/shellscript/phoneinfoga_proxy.sh {{args}}
+
 # Debug con salida formateada (stdout/stderr/exit code separados, sin LLM)
 # Uso: just osint debug               → interactivo
 #      just osint debug -- -p +52...  → comando con rich output

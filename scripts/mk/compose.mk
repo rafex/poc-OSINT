@@ -1,6 +1,7 @@
 # COMPOSE_CMD y COMPOSE_FILE vienen de mk/vars.mk
 .PHONY: compose-build-phomber compose-build-sherlock compose-build-gitfive \
-        compose-build-numspy compose-build-whatsmyname compose-build-all compose-build-llama \
+        compose-build-numspy compose-build-whatsmyname compose-build-phoneinfoga \
+        compose-build-all compose-build-llama \
         compose-up compose-up-local \
         compose-down compose-stop \
         compose-ps compose-logs \
@@ -31,8 +32,13 @@ compose-build-whatsmyname:
 	@printf "$(CYAN)[compose]$(RESET) Construyendo imagen whatsmyname…\n"
 	$(COMPOSE_CMD) -f $(COMPOSE_FILE) build whatsmyname
 
+## compose-build-phoneinfoga Construye la imagen de PhoneInfoga para compose
+compose-build-phoneinfoga:
+	@printf "$(CYAN)[compose]$(RESET) Construyendo imagen phoneinfoga…\n"
+	$(COMPOSE_CMD) -f $(COMPOSE_FILE) build phoneinfoga
+
 ## compose-build-all      Construye todas las imágenes OSINT para compose
-compose-build-all: compose-build-phomber compose-build-sherlock compose-build-gitfive compose-build-numspy compose-build-whatsmyname
+compose-build-all: compose-build-phomber compose-build-sherlock compose-build-gitfive compose-build-numspy compose-build-whatsmyname compose-build-phoneinfoga
 	@printf "$(GREEN)[compose]$(RESET) Imágenes OSINT listas.\n"
 
 ## compose-build-llama    Construye la imagen de llama-server (tarda varios minutos)
@@ -44,7 +50,7 @@ compose-build-llama:
 ## compose-up             Levanta todos los servicios OSINT en background
 compose-up:
 	@printf "$(CYAN)[compose]$(RESET) Iniciando stack OSINT…\n"
-	$(COMPOSE_CMD) -f $(COMPOSE_FILE) up --detach phomber sherlock gitfive numspy whatsmyname
+	$(COMPOSE_CMD) -f $(COMPOSE_FILE) up --detach phomber sherlock gitfive numspy whatsmyname phoneinfoga
 	@printf "$(GREEN)[compose]$(RESET) Stack OSINT activo.\n"
 
 ## compose-up-local       Levanta stack completo + llama-server local
@@ -82,5 +88,6 @@ compose-clean: compose-down
 	$(PODMAN) rmi $(GITFIVE_IMAGE)          2>/dev/null || true
 	$(PODMAN) rmi $(NUMSPY_IMAGE)           2>/dev/null || true
 	$(PODMAN) rmi $(WHATSMYNAME_IMAGE)      2>/dev/null || true
+	$(PODMAN) rmi $(PHONEINFOGA_IMAGE)      2>/dev/null || true
 	$(PODMAN) rmi localhost/llama-server:latest 2>/dev/null || true
 	@printf "$(GREEN)[compose]$(RESET) Imágenes eliminadas.\n"
